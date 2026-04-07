@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'">
 <title>Hybrid Athlete Weekly Plan</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -343,6 +344,18 @@
 
 <script>
 // ─────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+// ─────────────────────────────────────────
 // DATA: all slots with primary + alternatives
 // ─────────────────────────────────────────
 const DAYS = [
@@ -617,7 +630,7 @@ function renderModalHistory(exName) {
     const dateStr = new Date(e.date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'2-digit'});
     const setsStr = fmtSets(e.sets);
     const prTag = isPR ? `<span class="modal-history-pr-tag">PR</span>` : '';
-    const noteRow = e.note ? `<div class="modal-history-note">"${e.note}"</div>` : '';
+    const noteRow = e.note ? `<div class="modal-history-note">"${escHtml(e.note)}"</div>` : '';
     return `<div class="modal-history-row${isPR?' is-pr':''}">
       <span class="modal-history-date">${dateStr}</span>
       <span class="modal-history-sets">${setsStr}</span>
@@ -636,9 +649,11 @@ function addSetRow(weight='', reps='') {
   const row = document.createElement('div');
   row.className = 'set-row';
   row.innerHTML = `<span class="set-num">${n}</span>
-    <input class="set-input weight-input" type="number" placeholder="0" value="${weight}" min="0" step="2.5" inputmode="decimal">
-    <input class="set-input" type="number" placeholder="0" value="${reps}" min="0" inputmode="numeric">
+    <input class="set-input weight-input" type="number" placeholder="0" min="0" step="2.5" inputmode="decimal">
+    <input class="set-input" type="number" placeholder="0" min="0" inputmode="numeric">
     <button class="set-del" onclick="this.parentElement.remove();renumber()">✕</button>`;
+  row.querySelectorAll('.set-input')[0].value = weight;
+  row.querySelectorAll('.set-input')[1].value = reps;
   sc.appendChild(row);
   // wire up autofill on the weight input just added
   const wi = row.querySelector('.weight-input');
@@ -809,7 +824,7 @@ function renderProgress(filter='') {
         return `<tr class="${isPR?'pr-row':''}">
           <td>${new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'})}</td>
           <td>${fmtSets(e.sets)}</td>
-          <td>${e.note||'—'}</td>
+          <td>${escHtml(e.note||'—')}</td>
           <td><button class="del-entry" onclick="deleteEntry('${safeEx}','${safeDate}','${slot.id}')">✕</button></td>
         </tr>`;
       }).join('');
