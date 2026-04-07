@@ -235,7 +235,58 @@
     .day-title { font-size:26px; }
     .rest-grid { grid-template-columns:1fr; }
     .block-primary { display:none; }
+    .tp-title { font-size:17px; }
+    .today-panel { padding:12px 20px 14px; }
+    .tp-day-picker { gap:4px; }
   }
+
+  /* ── TODAY PANEL ── */
+  .today-panel { padding:14px 32px 16px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .tp-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent); text-transform:uppercase; letter-spacing:.18em; margin-bottom:8px; }
+  .tp-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .tp-title { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--text); flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tp-start-btn { padding:7px 18px; border:none; border-radius:8px; background:var(--accent); color:#0d0d0d; font-family:'DM Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.1em; font-weight:500; cursor:pointer; white-space:nowrap; transition:opacity .15s; }
+  .tp-start-btn:hover { opacity:.85; }
+  .tp-end-btn { padding:6px 14px; border:1px solid rgba(255,107,53,.5); border-radius:6px; background:transparent; color:var(--accent2); font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.1em; cursor:pointer; transition:all .15s; white-space:nowrap; }
+  .tp-end-btn:hover { background:var(--accent2); color:#0d0d0d; border-color:var(--accent2); }
+  .tp-bar-wrap { display:flex; align-items:center; gap:8px; flex:1; min-width:80px; max-width:180px; }
+  .tp-bar-track { flex:1; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .tp-bar-fill { height:100%; background:var(--accent); border-radius:2px; transition:width .4s; }
+  .tp-count { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); white-space:nowrap; }
+  .tp-done-badge { font-family:'DM Mono',monospace; font-size:11px; color:var(--accent); background:rgba(232,255,71,.08); border:1px solid rgba(232,255,71,.2); padding:3px 12px; border-radius:20px; white-space:nowrap; }
+  .tp-day-picker { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .tp-day-btn { padding:6px 12px; border:1px solid var(--border); border-radius:6px; background:var(--surface2); color:var(--text); font-family:'DM Mono',monospace; font-size:10px; cursor:pointer; transition:all .15s; white-space:nowrap; }
+  .tp-day-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── NEXT-UP BADGE ── */
+  .next-badge { display:block; font-family:'DM Mono',monospace; font-size:7px; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-top:3px; }
+  .day-pill.active .next-badge { color:#0d0d0d; }
+
+  /* ── RUN LOG ── */
+  .run-log-btn { display:inline-block; margin-top:12px; padding:8px 20px; border:1px solid var(--accent); border-radius:6px; background:transparent; color:var(--accent); font-family:'DM Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.1em; cursor:pointer; transition:all .15s; }
+  .run-log-btn:hover { background:var(--accent); color:#0d0d0d; }
+  .run-history-row { display:grid; grid-template-columns:68px 1fr auto; gap:8px; align-items:center; padding:7px 10px; background:var(--surface2); border-radius:6px; margin-bottom:4px; }
+  .run-history-date { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
+  .run-history-stats { font-family:'DM Mono',monospace; font-size:11px; color:var(--accent); }
+  .run-input-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .run-input-group { display:flex; flex-direction:column; gap:4px; margin-bottom:12px; }
+  .run-input-label { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; }
+  .run-input { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:9px 10px; color:var(--text); font-size:14px; font-family:'DM Sans',sans-serif; width:100%; transition:border-color .15s; }
+  .run-input:focus { outline:none; border-color:var(--accent); }
+  .run-input::placeholder { color:var(--muted); font-size:12px; }
+  .run-zone-select { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:9px 10px; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; width:100%; cursor:pointer; appearance:none; transition:border-color .15s; }
+  .run-zone-select:focus { outline:none; border-color:var(--accent); }
+  .run-zone-select option { background:var(--surface2); color:var(--text); }
+
+  /* ── COMPLETION OVERLAY ── */
+  .completion-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:3000; align-items:center; justify-content:center; padding:20px; }
+  .completion-overlay.show { display:flex; }
+  .completion-card { background:var(--surface); border:1px solid rgba(232,255,71,.25); border-radius:16px; padding:48px; text-align:center; max-width:380px; width:100%; }
+  .completion-big { font-family:'Bebas Neue',sans-serif; font-size:80px; color:var(--accent); line-height:1; letter-spacing:.04em; }
+  .completion-sub { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.15em; margin:10px 0 20px; }
+  .completion-prs { font-size:13px; color:var(--text); margin-bottom:28px; line-height:1.9; min-height:24px; }
+  .completion-close { padding:10px 36px; border:none; border-radius:8px; background:var(--accent); color:#0d0d0d; font-family:'DM Mono',monospace; font-size:12px; text-transform:uppercase; font-weight:500; cursor:pointer; transition:opacity .15s; }
+  .completion-close:hover { opacity:.85; }
 </style>
 </head>
 <body>
@@ -260,6 +311,7 @@
 
 <!-- ═══ WORKOUT VIEW ═══ -->
 <div class="view active" id="view-workout">
+  <div class="today-panel" id="today-panel"></div>
   <div class="week-strip">
     <div class="day-pill active" onclick="setDay(1)"><div class="pill-num">01</div><div class="pill-type">Strength</div></div>
     <div class="day-pill" onclick="setDay(2)"><div class="pill-num">02</div><div class="pill-type">Run</div></div>
@@ -340,6 +392,54 @@
   </div>
 </div>
 
+<!-- ═══ RUN LOG MODAL ═══ -->
+<div class="modal-overlay" id="run-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-sub" id="run-modal-date"></div>
+      <div class="modal-title" id="run-modal-title">Log Run</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-history" id="run-modal-history"></div>
+      <div class="run-input-grid">
+        <div class="run-input-group" style="margin-bottom:0">
+          <div class="run-input-label">Distance (miles)</div>
+          <input class="run-input" type="number" id="run-distance" placeholder="5.0" min="0" step="0.1" inputmode="decimal">
+        </div>
+        <div class="run-input-group" style="margin-bottom:0">
+          <div class="run-input-label">Duration (min)</div>
+          <input class="run-input" type="number" id="run-duration" placeholder="45" min="0" inputmode="numeric">
+        </div>
+      </div>
+      <div class="run-input-group">
+        <div class="run-input-label">Effort Zone</div>
+        <select class="run-zone-select" id="run-zone">
+          <option value="1">Zone 1 — Very Easy / Recovery</option>
+          <option value="2" selected>Zone 2 — Easy / Aerobic</option>
+          <option value="3">Zone 3 — Moderate / Tempo</option>
+          <option value="4">Zone 4 — Hard / Threshold</option>
+          <option value="5">Zone 5 — Max / VO2</option>
+        </select>
+      </div>
+      <textarea class="note-input" id="run-note" rows="2" placeholder="Notes — route, conditions, how it felt…"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeRunModal()">Cancel</button>
+      <button class="btn-save" onclick="saveRunLog()">Save Run</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ COMPLETION OVERLAY ═══ -->
+<div class="completion-overlay" id="completion-overlay">
+  <div class="completion-card">
+    <div class="completion-big">DONE</div>
+    <div class="completion-sub" id="completion-sub"></div>
+    <div class="completion-prs" id="completion-prs"></div>
+    <button class="completion-close" onclick="closeCompletion()">Close</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -353,6 +453,224 @@ function escHtml(str) {
     .replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;')
     .replace(/'/g,'&#39;');
+}
+
+// ─────────────────────────────────────────
+// RUN LOG SYSTEM
+// ─────────────────────────────────────────
+const RUN_KEY = 'hybrid-athlete-runs-v1';
+let runDb = {}; // { dayId: [{date, distance, duration, zone, note}] }
+let currentRunDayId = null;
+
+function loadRunDb() {
+  try { const r = localStorage.getItem(RUN_KEY); if (r) runDb = JSON.parse(r); } catch(e) { runDb = {}; }
+}
+
+function saveRunDb() {
+  try { localStorage.setItem(RUN_KEY, JSON.stringify(runDb)); } catch(e) {}
+}
+
+function openRunLog(dayId) {
+  currentRunDayId = dayId;
+  const day = DAYS.find(d => d.id === dayId);
+  document.getElementById('run-modal-title').textContent = day?.title || 'Log Run';
+  document.getElementById('run-modal-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('run-distance').value = '';
+  document.getElementById('run-duration').value = '';
+  document.getElementById('run-zone').value = '2';
+  document.getElementById('run-note').value = '';
+  renderRunModalHistory(dayId);
+  document.getElementById('run-modal').classList.add('open');
+}
+
+function renderRunModalHistory(dayId) {
+  const el = document.getElementById('run-modal-history');
+  const logs = (runDb[dayId] || []).slice(-3).reverse();
+  if (!logs.length) { el.innerHTML = '<p class="modal-history-empty">No previous runs for this day type.</p>'; return; }
+  const label = `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px">Previous runs</div>`;
+  const rows = logs.map(r => {
+    const dateStr = new Date(r.date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'2-digit'});
+    const parts = [r.distance ? `${r.distance}mi` : '', r.duration ? `${r.duration}min` : '', r.zone ? `Z${r.zone}` : ''].filter(Boolean);
+    return `<div class="modal-history-row">
+      <span class="modal-history-date">${dateStr}</span>
+      <span class="modal-history-sets">${parts.join(' · ')}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = label + rows;
+}
+
+function saveRunLog() {
+  const distance = parseFloat(document.getElementById('run-distance').value) || 0;
+  const duration = parseInt(document.getElementById('run-duration').value) || 0;
+  const zone = parseInt(document.getElementById('run-zone').value);
+  const note = document.getElementById('run-note').value.trim();
+  if (!distance && !duration) { showToast('Add distance or duration'); return; }
+  const entry = { date: new Date().toISOString(), distance, duration, zone, note };
+  if (!runDb[currentRunDayId]) runDb[currentRunDayId] = [];
+  runDb[currentRunDayId].push(entry);
+  saveRunDb();
+  if (activeSession && activeSession.dayId === currentRunDayId) {
+    activeSession.runLogged = true;
+    saveSessions();
+    updateSessionBanner();
+  }
+  refreshRunSection(currentRunDayId);
+  closeRunModal();
+  showToast('Run logged ✓');
+}
+
+function closeRunModal() {
+  document.getElementById('run-modal').classList.remove('open');
+}
+
+function renderRunLogSection(dayId) {
+  const logs = runDb[dayId] || [];
+  const recent = logs.slice(-3).reverse();
+  const histHtml = recent.map(r => {
+    const dateStr = new Date(r.date).toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    const parts = [r.distance ? `${r.distance}mi` : '', r.duration ? `${r.duration}min` : '', r.zone ? `Z${r.zone}` : ''].filter(Boolean);
+    return `<div class="run-history-row">
+      <span class="run-history-date">${dateStr}</span>
+      <span class="run-history-stats">${parts.join(' · ')}</span>
+      <span style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.note || '')}</span>
+    </div>`;
+  }).join('');
+  const histSection = recent.length
+    ? `<div class="examples-label" style="margin-top:16px">Recent Runs</div>${histHtml}`
+    : '';
+  return `<div id="run-section-${dayId}" style="margin-top:4px">${histSection}<button class="run-log-btn" onclick="openRunLog(${dayId})">+ Log This Run</button></div>`;
+}
+
+function refreshRunSection(dayId) {
+  const el = document.getElementById('run-section-' + dayId);
+  if (!el) return;
+  const tmp = document.createElement('div');
+  tmp.innerHTML = renderRunLogSection(dayId);
+  el.replaceWith(tmp.firstElementChild);
+}
+
+// ─────────────────────────────────────────
+// TODAY PANEL
+// ─────────────────────────────────────────
+function renderTodayPanel() {
+  const panel = document.getElementById('today-panel');
+  if (!panel) return;
+  const today = todayKey();
+  const todaySess = sessions[today];
+  const dateLabel = new Date().toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+
+  if (activeSession) {
+    const day = DAYS.find(d => d.id === activeSession.dayId);
+    const isRunDay = day?.type === 'run' || day?.type === 'rest';
+    const total = day?.slots?.length || 0;
+    const done = activeSession.completedSlots.length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+    let middleHtml = '';
+    if (isRunDay) {
+      middleHtml = activeSession.runLogged
+        ? `<span class="tp-done-badge">Run Logged ✓</span>`
+        : `<button class="tp-start-btn" style="background:transparent;border:1px solid var(--accent);color:var(--accent)" onclick="openRunLog(${day.id})">+ Log Run</button>`;
+    } else if (total > 0) {
+      middleHtml = `<div class="tp-bar-wrap"><div class="tp-bar-track"><div class="tp-bar-fill" style="width:${pct}%"></div></div></div><span class="tp-count">${done}/${total}</span>`;
+    }
+
+    panel.innerHTML = `<div class="tp-label">Active Session · ${dateLabel}</div>
+      <div class="tp-row">
+        <span class="tp-title">${day?.title || 'Session'}</span>
+        ${middleHtml}
+        <button class="tp-end-btn" onclick="endSession()">End Session</button>
+      </div>`;
+
+  } else if (todaySess) {
+    const day = DAYS.find(d => d.id === todaySess.dayId);
+    const isRunDay = day?.type === 'run' || day?.type === 'rest';
+    const total = day?.slots?.length || 0;
+    const done = todaySess.completedSlots.length;
+    const complete = isRunDay ? !!todaySess.runLogged : (total > 0 && done >= total);
+
+    panel.innerHTML = `<div class="tp-label">${complete ? 'Today Complete' : 'Today · ' + dateLabel}</div>
+      <div class="tp-row">
+        <span class="tp-title">${day?.title || ''}</span>
+        ${complete
+          ? `<span class="tp-done-badge">✓ Done</span>`
+          : `<span class="tp-count">${done}/${total} exercises</span>
+             <button class="tp-start-btn" onclick="resumeSession('${today}')">Resume</button>`}
+      </div>`;
+
+  } else {
+    const dayBtns = DAYS.map(d =>
+      `<button class="tp-day-btn" onclick="startSessionAndGo('${today}',${d.id})">${d.title}</button>`
+    ).join('');
+    panel.innerHTML = `<div class="tp-label">Today · ${dateLabel}</div>
+      <div class="tp-row" style="margin-bottom:8px">
+        <span style="font-size:13px;color:var(--muted)">What are you training today?</span>
+      </div>
+      <div class="tp-day-picker">${dayBtns}</div>`;
+  }
+}
+
+function startSessionAndGo(dateKey, dayId) {
+  startSession(dateKey, dayId);
+  setDay(dayId);
+}
+
+// ─────────────────────────────────────────
+// NEXT-UP BADGE
+// ─────────────────────────────────────────
+function updateNextBadge() {
+  document.querySelectorAll('.next-badge').forEach(b => b.remove());
+  const today = todayKey();
+  if (sessions[today]) return; // today already has a session, no nudge needed
+  const sessionDates = Object.keys(sessions).sort();
+  if (!sessionDates.length) {
+    addNextBadge(1, 'Start here');
+    return;
+  }
+  const lastSess = sessions[sessionDates[sessionDates.length - 1]];
+  const nextDayId = (lastSess.dayId % 7) + 1;
+  addNextBadge(nextDayId, 'Next up');
+}
+
+function addNextBadge(dayId, label) {
+  const pill = document.querySelectorAll('.day-pill')[dayId - 1];
+  if (!pill) return;
+  const badge = document.createElement('div');
+  badge.className = 'next-badge';
+  badge.textContent = label;
+  pill.appendChild(badge);
+}
+
+// ─────────────────────────────────────────
+// COMPLETION
+// ─────────────────────────────────────────
+function showCompletion(day) {
+  const prsHit = [];
+  (day.slots || []).forEach(slot => {
+    [slot.primary, ...slot.alts.map(a => a.name)].forEach(ex => {
+      const logs = db[ex] || [];
+      if (logs.length < 2) return; // need at least a prior session to compare
+      const last = logs[logs.length - 1];
+      const maxW = Math.max(0, ...last.sets.map(s => s.weight));
+      if (maxW <= 0) return;
+      const prevMax = Math.max(0, ...logs.slice(0, -1).flatMap(e => e.sets.map(s => s.weight)));
+      if (maxW > prevMax) prsHit.push(`${ex} — ${maxW} lbs`);
+    });
+  });
+
+  document.getElementById('completion-sub').textContent = `${day.title} · All ${day.slots?.length || 0} exercises done`;
+  const prsEl = document.getElementById('completion-prs');
+  if (prsHit.length) {
+    prsEl.innerHTML = `<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--accent2);text-transform:uppercase;letter-spacing:.1em">PRs this session</span><br><br>` +
+      prsHit.map(p => escHtml(p)).join('<br>');
+  } else {
+    prsEl.textContent = 'No new PRs today — consistency is the work.';
+  }
+  document.getElementById('completion-overlay').classList.add('show');
+}
+
+function closeCompletion() {
+  document.getElementById('completion-overlay').classList.remove('show');
 }
 
 // ─────────────────────────────────────────
@@ -477,11 +795,14 @@ async function loadDB() {
   try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) db = JSON.parse(raw); }
   catch(e) { db = {}; }
   await loadSessions();
+  loadRunDb();
   renderWorkout();
   refreshAllBadges();
   refreshAllHistories();
   updateSessionBanner();
   if (activeSession) restoreBlockDoneStates();
+  renderTodayPanel();
+  updateNextBadge();
 }
 
 async function saveDB() {
@@ -498,7 +819,7 @@ function renderWorkout() {
     if (day.type === 'strength') {
       inner = `<div class="blocks">${day.slots.map(slot => renderBlock(slot)).join('')}</div>`;
     } else if (day.type === 'run') {
-      inner = day.runCards.map(c => renderRunCard(c)).join('');
+      inner = day.runCards.map(c => renderRunCard(c)).join('') + renderRunLogSection(day.id);
     } else if (day.type === 'rest') {
       inner = `<div class="rest-grid">${day.restCards.map(c =>
         `<div class="rest-card"><div class="rest-card-title">${c.title}</div><ul>${c.items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`
@@ -707,6 +1028,13 @@ function saveLog() {
     saveSessions();
     updateSessionBanner();
     renderCalendarDetail(activeSession.date);
+    const compDay = DAYS.find(d => d.id === activeSession.dayId);
+    const total = compDay?.slots?.length || 0;
+    if (total > 0 && activeSession.completedSlots.length >= total) {
+      closeModal();
+      showCompletion(compDay);
+      return;
+    }
   }
   closeModal();
   showToast(`Saved: ${exName} ✓`);
@@ -905,18 +1233,19 @@ function startSession(dateKey, dayId) {
   saveSessions();
   updateSessionBanner();
   restoreBlockDoneStates();
+  updateNextBadge();
   showToast('Session started');
 }
 
 function endSession() {
   activeSession = null;
   updateSessionBanner();
-  // clear done states from blocks (they'll restore if session is resumed)
   document.querySelectorAll('.block.done').forEach(b => {
     b.classList.remove('done');
     const chk = b.querySelector('.done-check'); if (chk) chk.remove();
     const lb = b.querySelector('.log-btn'); if (lb) lb.textContent = '+ Log';
   });
+  updateNextBadge();
   showToast('Session ended');
 }
 
@@ -934,13 +1263,24 @@ function updateSessionBanner() {
   const banner = document.getElementById('session-banner');
   const text = document.getElementById('session-banner-text');
   const prog = document.getElementById('session-banner-progress');
+  renderTodayPanel();
   if (!activeSession) { banner.classList.remove('visible'); return; }
   banner.classList.add('visible');
   const day = DAYS.find(d => d.id === activeSession.dayId);
   const total = day?.slots?.length || 0;
   const done = activeSession.completedSlots.length;
-  text.textContent = `Active: ${day?.title || 'Session'} · ${activeSession.date}`;
-  prog.textContent = total ? `${done}/${total} exercises` : '';
+  text.textContent = `${day?.title || 'Session'} · ${activeSession.date}`;
+  if (total > 0) {
+    const pct = Math.round((done / total) * 100);
+    prog.innerHTML = `<div style="display:flex;align-items:center;gap:8px">
+      <div style="width:72px;height:3px;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:var(--accent);transition:width .4s"></div>
+      </div>
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${done}/${total}</span>
+    </div>`;
+  } else {
+    prog.textContent = '';
+  }
 }
 
 // ─────────────────────────────────────────
@@ -1103,6 +1443,7 @@ function showToast(msg) {
 }
 
 document.getElementById('modal').addEventListener('click', e => { if (e.target.id==='modal') closeModal(); });
+document.getElementById('run-modal').addEventListener('click', e => { if (e.target.id==='run-modal') closeRunModal(); });
 
 loadDB();
 </script>
