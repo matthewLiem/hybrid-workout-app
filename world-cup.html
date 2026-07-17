@@ -96,9 +96,13 @@
   .pool { display:grid; grid-template-columns:repeat(auto-fill,minmax(158px,1fr)); gap:10px; max-height:560px; overflow-y:auto; padding:2px; }
   .pcard { background:linear-gradient(160deg,var(--surface2),var(--surface)); border:1px solid var(--border2); border-radius:12px; padding:12px; cursor:pointer; transition:.15s; position:relative; overflow:hidden; }
   .pcard:hover { border-color:var(--accent); transform:translateY(-2px); }
-  .pcard .ovr { position:absolute; top:10px; right:12px; font-family:'Bebas Neue',sans-serif; font-size:26px; line-height:1; color:var(--gold); }
+  .pcard .pc-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .face { width:46px; height:46px; border-radius:10px; overflow:hidden; flex:none; border:1px solid var(--border2); }
+  .face svg { display:block; width:100%; height:100%; }
+  .pcard .pc-tr { display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+  .pcard .ovr { font-family:'Bebas Neue',sans-serif; font-size:28px; line-height:1; color:var(--gold); }
   .pcard .pos { display:inline-block; font-family:'DM Mono',monospace; font-size:9px; font-weight:500; padding:2px 6px; border-radius:4px; background:var(--surface3); color:var(--accent); letter-spacing:.06em; }
-  .pcard .pname { font-weight:700; font-size:14px; margin-top:26px; line-height:1.2; }
+  .pcard .pname { font-weight:700; font-size:14px; margin-top:9px; line-height:1.2; }
   .pcard .pmeta { font-size:10px; color:var(--muted); margin-top:4px; display:flex; align-items:center; gap:5px; }
   .pcard .flag { font-size:13px; }
   .pcard .attrs { display:flex; gap:6px; margin-top:9px; flex-wrap:wrap; }
@@ -116,6 +120,8 @@
   .roster { display:flex; flex-direction:column; gap:5px; }
   .rslot { display:flex; align-items:center; gap:8px; font-size:12px; padding:5px 8px; border-radius:6px; background:var(--surface); }
   .rslot .rpos { font-family:'DM Mono',monospace; font-size:9px; color:var(--accent); min-width:26px; }
+  .rface { width:22px; height:22px; border-radius:5px; overflow:hidden; flex:none; }
+  .rface svg { display:block; width:100%; height:100%; }
   .rslot .rovr { margin-left:auto; font-family:'Bebas Neue',sans-serif; color:var(--gold); font-size:16px; }
   .rslot.empty { color:var(--muted); font-style:italic; opacity:.6; }
 
@@ -585,8 +591,10 @@ function renderPool(){
     const attrs=Object.entries(p.a).map(([k,v])=>`<span class="attr">${k} <b>${v}</b></span>`).join('');
     el.insertAdjacentHTML('beforeend',
       `<div class="pcard" data-id="${p.id}">
-        <div class="ovr">${p.ovr}</div>
-        <span class="pos">${p.pos}</span>
+        <div class="pc-top">
+          <div class="face">${playerFace(p)}</div>
+          <div class="pc-tr"><div class="ovr">${p.ovr}</div><span class="pos">${p.pos}</span></div>
+        </div>
         <div class="pname">${escapeHtml(p.name)}</div>
         <div class="pmeta"><span class="flag">${p.flag}</span> ${escapeHtml(p.club)}</div>
         <div class="attrs">${attrs}</div>
@@ -611,7 +619,7 @@ function renderSide(){
     const slots=[];
     const shape=IDEAL_SHAPE[S.squadSize]||{};
     const byPos={GK:[],DEF:[],MID:[],FWD:[]}; t.picks.forEach(p=>byPos[p.pos].push(p));
-    t.picks.forEach(p=>slots.push(`<div class="rslot"><span class="rpos">${p.pos}</span><span class="flag">${p.flag}</span> ${escapeHtml(p.name)}<span class="rovr">${p.ovr}</span></div>`));
+    t.picks.forEach(p=>slots.push(`<div class="rslot"><span class="rpos">${p.pos}</span><span class="rface">${playerFace(p)}</span>${escapeHtml(p.name)}<span class="rovr">${p.ovr}</span></div>`));
     for(let k=t.picks.length;k<S.squadSize;k++) slots.push(`<div class="rslot empty">Empty slot</div>`);
     el.insertAdjacentHTML('beforeend',
       `<div class="teamcard ${t.id===curId?'current':''}">
@@ -1120,6 +1128,51 @@ function extractJson(txt){
 // ═══════════════════════════════════════════════════════════════
 //  UTIL
 // ═══════════════════════════════════════════════════════════════
+// ---- procedural portrait faces (deterministic per player, self-contained) ----
+const SKIN=['#f4cfa6','#e8b489','#d99b68','#c07f4c','#9c6237','#6f4423'];
+const HAIR=['#15130f','#3a2a19','#5a3b22','#7a5330','#b08a4e','#e0cfa0','#8f8f8f','#b6421f'];
+const JERSEY=['#e23b3b','#2f7de0','#1eaf5a','#7d3fd1','#e08a2f','#d92e7a','#2bb7c4','#d7d7d7','#f4c531','#111827'];
+function hashStr(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function playerFace(p){
+  const h=hashStr(p.name+p.pos);
+  const skin=SKIN[h%SKIN.length];
+  const hair=HAIR[(h>>>4)%HAIR.length];
+  const style=(h>>>8)%6;      // hair style
+  const beard=((h>>>13)%4===0);
+  const jersey= p.pos==='GK' ? '#2bd07a' : JERSEY[(h>>>16)%JERSEY.length];
+  const bg = shade(jersey,-46);
+  // hair sits as a crown on top of the head (drawn after the face so the forehead shows)
+  let back='', front='';
+  if(style===3){ back=`<rect x="10.5" y="16" width="4" height="13" rx="2" fill="${hair}"/><rect x="27.5" y="16" width="4" height="13" rx="2" fill="${hair}"/>`; } // long sides
+  const crowns={
+    0:`<path d="M12 21 Q11.5 10 22 10 Q32.5 10 32 21 Q30 14 22 14 Q14 14 12 21Z" fill="${hair}"/>`,       // short
+    1:`<path d="M13 20 Q22 15 31 20 Q30 16.5 22 16.5 Q14 16.5 13 20Z" fill="${hair}" opacity=".9"/>`,      // buzz
+    2:`<path d="M9 22 Q8 8 22 8 Q36 8 35 22 Q31 12 22 12 Q13 12 9 22Z" fill="${hair}"/>`,                  // afro
+    3:`<path d="M11.5 20 Q11 11 22 11 Q33 11 32.5 20 Q30 14.5 22 14.5 Q14 14.5 11.5 20Z" fill="${hair}"/>`,// long top
+    4:`<path d="M12 20 Q13 9 22 9 Q31 9 32 18 Q30 13 24 13 Q16 13 12 20Z" fill="${hair}"/>`,               // quiff (side part)
+    5:`<path d="M12 20 Q11.5 10 22 10 Q32.5 10 32 16 Q26 12.5 20 13 Q15 13.5 12 20Z" fill="${hair}"/>`,    // side sweep
+  };
+  front=crowns[style]||crowns[0];
+  const beardEl = beard ? `<path d="M14.5 24 Q22 33 29.5 24 Q29 30 22 31 Q15 30 14.5 24Z" fill="${shade(hair,-4)}"/>` : '';
+  const ears = `<circle cx="12.6" cy="23" r="1.8" fill="${skin}"/><circle cx="31.4" cy="23" r="1.8" fill="${skin}"/>`;
+  return `<svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="44" height="44" fill="${bg}"/>
+    <path d="M22 30 Q10 30 8 44 L36 44 Q34 30 22 30Z" fill="${jersey}"/>
+    <path d="M13 42 L22 44 L31 42 L28 34 L16 34Z" fill="${shade(jersey,14)}"/>
+    ${back}${ears}
+    <circle cx="22" cy="22.5" r="9.2" fill="${skin}"/>
+    ${beardEl}
+    ${front}
+    <circle cx="18.7" cy="23" r="1.05" fill="#2a2320"/>
+    <circle cx="25.3" cy="23" r="1.05" fill="#2a2320"/>
+    <path d="M20 27 Q22 28.3 24 27" stroke="${shade(skin,-28)}" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+function shade(hex,amt){
+  const n=parseInt(hex.slice(1),16); let r=(n>>16)+amt, g=((n>>8)&255)+amt, b=(n&255)+amt;
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
 function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
 function sum(arr){ return arr.reduce((s,x)=>s+(x?1:0),0); }
 function poisson(l){ let L=Math.exp(-l),k=0,p=1; do{k++;p*=Math.random();}while(p>L); return k-1; }
