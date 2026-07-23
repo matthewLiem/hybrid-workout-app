@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
+<title>Calculator</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; }
+  :root { --orange:#ff9f0a; --gray-fn:#a5a5a5; --gray-num:#333333; --num-active:#737373; --fn-active:#d9d9d9; }
+  html, body {
+    height:100%; background:#000; color:#fff;
+    font-family:-apple-system, "SF Pro Display", "SF Pro Text", system-ui, "Helvetica Neue", Arial, sans-serif;
+    overflow:hidden; touch-action:manipulation;
+  }
+  body { display:flex; justify-content:center; align-items:stretch; }
+
+  .phone {
+    width:100%; max-width:430px; height:100%; max-height:100vh;
+    display:flex; flex-direction:column; position:relative;
+    background:#000; overflow:hidden;
+  }
+
+  /* ---- Secret magician hotspot (top-left) ---- */
+  #hotspot {
+    position:absolute; top:0; left:0; width:72px; height:72px; z-index:50;
+    background:transparent; cursor:default;
+  }
+
+  /* ---- Armed "tell" + magician HUD ---- */
+  #tell {
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:6px; height:6px; border-radius:50%; background:transparent;
+    z-index:40; transition:background .2s; pointer-events:none;
+  }
+  #hud {
+    position:absolute; top:8px; left:0; right:0; z-index:41;
+    text-align:center; font-family:"SF Mono", ui-monospace, Menlo, monospace;
+    font-size:9px; line-height:1.5; letter-spacing:.02em;
+    color:#2c2c2c; pointer-events:none; display:none; padding:0 10px;
+    white-space:pre-wrap;
+  }
+  #hud.on { display:block; }
+  #hud b { font-weight:600; }
+
+  /* ---- Display ---- */
+  .display-wrap {
+    flex:1; display:flex; flex-direction:column; justify-content:flex-end;
+    align-items:flex-end; padding:0 26px 8px; min-height:0;
+  }
+  #display {
+    color:#fff; font-weight:300; letter-spacing:-.02em; line-height:1.05;
+    text-align:right; width:100%; word-break:break-all;
+    font-size:88px; transition:font-size .08s ease;
+  }
+
+  /* ---- Keypad ---- */
+  .keypad {
+    padding:0 12px calc(14px + env(safe-area-inset-bottom, 8px));
+    display:grid; grid-template-columns:repeat(4, 1fr);
+    gap:13px; flex-shrink:0;
+  }
+  .key {
+    position:relative; aspect-ratio:1/1; border:none; border-radius:9999px;
+    font-size:34px; font-weight:400; color:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:filter .12s, background .15s, color .15s;
+    -webkit-user-select:none; user-select:none;
+  }
+  .key:active { filter:brightness(1.35); }
+  .key.pressed { filter:brightness(1.5); }
+  .key.num { background:var(--gray-num); }
+  .key.fn  { background:var(--gray-fn); color:#000; font-weight:500; }
+  .key.op  { background:var(--orange); font-weight:500; font-size:40px; }
+  .key.op.selected { background:#fff; color:var(--orange); }
+  .key.zero {
+    grid-column:span 2; aspect-ratio:auto; border-radius:9999px;
+    justify-content:flex-start; padding-left:31px;
+  }
+
+  /* iOS shrinks the display font as digits grow; JS also adjusts. */
+  @media (max-height:720px){ #display{ font-size:72px; } .key{ font-size:30px; } .key.op{ font-size:34px; } }
+  @media (max-height:600px){ #display{ font-size:60px; } .keypad{ gap:10px; } }
+
+  /* ---- Settings sheet ---- */
+  #sheet {
+    position:absolute; inset:0; z-index:100; background:rgba(0,0,0,.94);
+    display:none; flex-direction:column; padding:22px 20px;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    font-family:-apple-system, system-ui, sans-serif;
+  }
+  #sheet.on { display:flex; }
+  #sheet h2 { font-size:22px; font-weight:600; margin-bottom:4px; }
+  #sheet .sub { color:#8a8a8a; font-size:12px; margin-bottom:18px; line-height:1.5; }
+  .row {
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    padding:12px 0; border-bottom:1px solid #1c1c1c;
+  }
+  .row label { font-size:14px; color:#eee; }
+  .row .desc { font-size:11px; color:#777; margin-top:2px; line-height:1.4; }
+  .row .lwrap { flex:1; }
+  select, input[type=number], input[type=text] {
+    background:#1c1c1c; color:#fff; border:1px solid #333; border-radius:8px;
+    padding:8px 10px; font-size:14px; min-width:88px; text-align:right;
+    font-family:inherit;
+  }
+  input[type=number]{ width:78px; }
+  .switch { position:relative; width:50px; height:30px; flex-shrink:0; }
+  .switch input { opacity:0; width:0; height:0; }
+  .slider {
+    position:absolute; inset:0; background:#39393d; border-radius:30px; transition:.2s; cursor:pointer;
+  }
+  .slider::before {
+    content:""; position:absolute; height:26px; width:26px; left:2px; top:2px;
+    background:#fff; border-radius:50%; transition:.2s;
+  }
+  .switch input:checked + .slider { background:#30d158; }
+  .switch input:checked + .slider::before { transform:translateX(20px); }
+  .section-title { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#666; margin:22px 0 4px; }
+  #preview {
+    background:#111; border:1px solid #262626; border-radius:12px; padding:14px;
+    margin:14px 0; font-family:"SF Mono", ui-monospace, monospace;
+  }
+  #preview .pv-num { font-size:26px; font-weight:300; letter-spacing:.02em; }
+  #preview .pv-read { color:var(--orange); font-size:13px; margin-top:6px; }
+  #preview .pv-lbl { color:#666; font-size:10px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
+  .btnrow { display:flex; gap:10px; margin:22px 0 8px; }
+  .btn { flex:1; padding:14px; border-radius:12px; border:none; font-size:15px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn.primary { background:var(--orange); color:#000; }
+  .btn.ghost { background:#1c1c1c; color:#fff; }
+  .cheat { font-size:12px; color:#9a9a9a; line-height:1.7; margin-top:8px; }
+  .cheat b { color:#fff; }
+  .cheat code { background:#1c1c1c; padding:1px 6px; border-radius:5px; color:var(--orange); font-family:"SF Mono", monospace; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div id="hotspot"></div>
+  <div id="tell"></div>
+  <div id="hud"></div>
+
+  <div class="display-wrap">
+    <div id="display">0</div>
+  </div>
+
+  <div class="keypad" id="keypad">
+    <button class="key fn"  data-k="clear">AC</button>
+    <button class="key fn"  data-k="negate">&#8314;/&#8331;</button>
+    <button class="key fn"  data-k="percent">%</button>
+    <button class="key op"  data-k="div" data-op="÷">&divide;</button>
+
+    <button class="key num" data-k="7">7</button>
+    <button class="key num" data-k="8">8</button>
+    <button class="key num" data-k="9">9</button>
+    <button class="key op"  data-k="mul" data-op="×">&times;</button>
+
+    <button class="key num" data-k="4">4</button>
+    <button class="key num" data-k="5">5</button>
+    <button class="key num" data-k="6">6</button>
+    <button class="key op"  data-k="sub" data-op="−">&minus;</button>
+
+    <button class="key num" data-k="1">1</button>
+    <button class="key num" data-k="2">2</button>
+    <button class="key num" data-k="3">3</button>
+    <button class="key op"  data-k="add" data-op="+">+</button>
+
+    <button class="key num zero" data-k="0">0</button>
+    <button class="key num" data-k="dot">.</button>
+    <button class="key op"  data-k="equals">=</button>
+  </div>
+
+  <!-- Settings / magician control panel -->
+  <div id="sheet">
+    <h2>Trick Setup</h2>
+    <div class="sub">Only you see this. Long-press the top-left corner to open it; a single tap there arms/disarms the trick during your act.</div>
+
+    <div id="preview">
+      <div class="pv-lbl">Live reveal preview (updates every second)</div>
+      <div class="pv-num" id="pvNum">—</div>
+      <div class="pv-read" id="pvRead">—</div>
+    </div>
+
+    <div class="section-title">Reveal number format</div>
+    <div class="row"><div class="lwrap"><label>Date order</label></div>
+      <select id="cfgOrder">
+        <option value="MDY">MM DD YY</option>
+        <option value="DMY">DD MM YY</option>
+        <option value="YMD">YY MM DD</option>
+      </select>
+    </div>
+    <div class="row"><div class="lwrap"><label>Pad month (07 vs 7)</label></div>
+      <label class="switch"><input type="checkbox" id="cfgPadMonth"><span class="slider"></span></label></div>
+    <div class="row"><div class="lwrap"><label>Pad day (05 vs 5)</label></div>
+      <label class="switch"><input type="checkbox" id="cfgPadDay"><span class="slider"></span></label></div>
+    <div class="row"><div class="lwrap"><label>Year digits</label></div>
+      <select id="cfgYear"><option value="2">2 (26)</option><option value="4">4 (2026)</option></select></div>
+    <div class="row"><div class="lwrap"><label>24-hour time</label><div class="desc">Off = 12-hour (07:16 pm → 07:16)</div></div>
+      <label class="switch"><input type="checkbox" id="cfgH24"><span class="slider"></span></label></div>
+    <div class="row"><div class="lwrap"><label>Pad hour (07 vs 7)</label></div>
+      <label class="switch"><input type="checkbox" id="cfgPadHour"><span class="slider"></span></label></div>
+    <div class="row"><div class="lwrap"><label>Include seconds</label></div>
+      <label class="switch"><input type="checkbox" id="cfgSeconds"><span class="slider"></span></label></div>
+    <div class="row"><div class="lwrap"><label>Time first, then date</label></div>
+      <label class="switch"><input type="checkbox" id="cfgTimeFirst"><span class="slider"></span></label></div>
+
+    <div class="section-title">Mechanism</div>
+    <div class="row"><div class="lwrap"><label>Reveal mode</label>
+      <div class="desc">Genuine: the app computes the real difference and forces its digits — pressing "=" truly sums to the target. Live: recomputes at "=" so the clock is always exact (timing-proof).</div></div>
+      <select id="cfgMode">
+        <option value="genuine">Genuine math</option>
+        <option value="live">Live at "="</option>
+      </select>
+    </div>
+    <div class="row"><div class="lwrap"><label>Lead time (seconds)</label>
+      <div class="desc">In Genuine mode the target = clock + this. Do your patter, press "=" during that minute.</div></div>
+      <input type="number" id="cfgOffset" min="0" max="600" step="5"></div>
+    <div class="row"><div class="lwrap"><label>Guarantee reveal at "="</label>
+      <div class="desc">Safety net: snaps to the exact target even if spectators tap the wrong number of times. Invisible (no tape on iOS calc). Recommended ON.</div></div>
+      <label class="switch"><input type="checkbox" id="cfgSnap"><span class="slider"></span></label></div>
+
+    <div class="section-title">Your secret cues</div>
+    <div class="row"><div class="lwrap"><label>Armed indicator</label>
+      <div class="desc">A tiny dot only you'd notice, confirming the trick is live.</div></div>
+      <select id="cfgTell"><option value="off">Off</option><option value="subtle">Subtle</option><option value="obvious">Obvious (rehearsal)</option></select></div>
+    <div class="row"><div class="lwrap"><label>Magician HUD</label>
+      <div class="desc">Faint text up top: what to announce, digits to solicit, reveal window.</div></div>
+      <label class="switch"><input type="checkbox" id="cfgHud"><span class="slider"></span></label></div>
+    <div class="row"><div class="lwrap"><label>HUD brightness</label>
+      <div class="desc">Dim for the act, bright for rehearsal.</div></div>
+      <select id="cfgHudBright"><option value="dim">Dim</option><option value="med">Medium</option><option value="bright">Bright</option></select></div>
+
+    <div class="btnrow">
+      <button class="btn ghost" id="btnClose">Done</button>
+      <button class="btn primary" id="btnSave">Save</button>
+    </div>
+
+    <div class="section-title">How to perform</div>
+    <div class="cheat">
+      <b>1.</b> Do real math with the crowd's numbers until a clean total is on screen (e.g. 3,000,000).<br>
+      <b>2.</b> <b>Single-tap the top-left corner</b> to arm. The app grabs that total, computes the date-time target, and secretly loads the difference.<br>
+      <b>3.</b> Tell spectators to "mash any number keys — totally random." Every tap enters the next hidden digit; the HUD shows how many remain.<br>
+      <b>4.</b> When the HUD says the reveal window is open, press <code>=</code>. The screen shows today's date &amp; time exactly.<br>
+      <b>5.</b> Read it back: the HUD spells out the date/time for you.<br><br>
+      Reset with <b>AC</b>. Re-tap the corner to disarm without revealing.
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Config ----------
+  var DEFAULTS = {
+    order:"MDY", padMonth:true, padDay:true, year:2,
+    h24:true, padHour:true, seconds:false, timeFirst:false,
+    mode:"genuine", offset:60, snap:true,
+    tell:"subtle", hud:true, hudBright:"dim"
+  };
+  var cfg = load();
+  function load(){
+    try {
+      var raw = localStorage.getItem("magicCalcConfig");
+      if(raw){ return Object.assign({}, DEFAULTS, JSON.parse(raw)); }
+    } catch(e){}
+    return Object.assign({}, DEFAULTS);
+  }
+  function save(){
+    try { localStorage.setItem("magicCalcConfig", JSON.stringify(cfg)); } catch(e){}
+  }
+
+  // ---------- Calculator engine ----------
+  var displayEl = document.getElementById("display");
+  var current = "0";        // string being entered / shown value
+  var previous = null;      // stored operand (number)
+  var operator = null;      // 'add','sub','mul','div'
+  var waitingForOperand = false;
+  var justEvaluated = false;
+
+  var OP_SYMBOL = { add:"+", sub:"−", mul:"×", div:"÷" };
+
+  function fmt(numStr){
+    // numStr is a raw string like "-1234.5" or "1234"
+    var neg = numStr.charAt(0) === "-";
+    if(neg) numStr = numStr.slice(1);
+    var parts = numStr.split(".");
+    var intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    var out = intPart + (parts.length>1 ? "." + parts[1] : "");
+    return (neg ? "-" : "") + out;
+  }
+
+  function render(){
+    var shown = current;
+    // If current is a plain number (not mid-entry with trailing dot), format with commas
+    if(/^-?\d+(\.\d+)?$/.test(current)){
+      shown = fmt(current);
+    } else {
+      // handle trailing dot e.g. "12." → keep the dot
+      shown = fmt(current.replace(/\.$/,"")) + (current.slice(-1)==="." ? "." : "");
+    }
+    displayEl.textContent = shown;
+    // Auto-shrink font like iOS
+    var len = shown.replace(/[.,-]/g,"").length;
+    var base = window.innerHeight <= 720 ? 72 : 88;
+    var size = base;
+    if(len > 6) size = base * (6/len) * 1.02;
+    if(size < 30) size = 30;
+    displayEl.style.fontSize = size + "px";
+    updateOpHighlight();
+  }
+
+  function updateOpHighlight(){
+    var keys = document.querySelectorAll(".key.op");
+    keys.forEach(function(k){ k.classList.remove("selected"); });
+    if(operator && waitingForOperand && !armed.active){
+      var el = document.querySelector('.key[data-k="'+operator+'"]');
+      if(el) el.classList.add("selected");
+    }
+  }
+
+  function toNum(){ return parseFloat(current); }
+
+  function inputDigit(d){
+    if(waitingForOperand){
+      current = (d==="."?"0.":d);
+      waitingForOperand = false;
+    } else if(justEvaluated){
+      current = (d==="."?"0.":d);
+      justEvaluated = false;
+    } else {
+      if(d==="."){
+        if(current.indexOf(".") === -1) current += ".";
+      } else {
+        current = (current === "0") ? d : current + d;
+      }
+    }
+    render();
+  }
+
+  function compute(a, b, op){
+    switch(op){
+      case "add": return a + b;
+      case "sub": return a - b;
+      case "mul": return a * b;
+      case "div": return b === 0 ? NaN : a / b;
+    }
+    return b;
+  }
+
+  function numToStr(n){
+    if(!isFinite(n)) return "Error";
+    // Trim floating point noise
+    var s = String(n);
+    if(s.indexOf("e") === -1 && s.indexOf(".") !== -1){
+      s = String(parseFloat(n.toFixed(10)));
+    }
+    return s;
+  }
+
+  function setOperator(op){
+    if(operator && !waitingForOperand){
+      var result = compute(previous, toNum(), operator);
+      current = numToStr(result);
+      previous = result;
+    } else {
+      previous = toNum();
+    }
+    operator = op;
+    waitingForOperand = true;
+    justEvaluated = false;
+    render();
+  }
+
+  function equals(){
+    if(operator === null){ justEvaluated = true; render(); return; }
+    var b = waitingForOperand ? previous : toNum();
+    var result = compute(previous, b, operator);
+    current = numToStr(result);
+    previous = null; operator = null; waitingForOperand = false; justEvaluated = true;
+    render();
+  }
+
+  function clearAll(){
+    current = "0"; previous = null; operator = null;
+    waitingForOperand = false; justEvaluated = false;
+    render();
+  }
+
+  function negate(){ current = numToStr(toNum() * -1); render(); }
+  function percent(){ current = numToStr(toNum() / 100); render(); }
+
+  // ---------- The trick ----------
+  var armed = { active:false, target:null, queue:"", idx:0, op:null, readback:"", num:0, tickTimer:null, revealAt:0 };
+
+  function pad2(n){ return String(n).padStart(2,"0"); }
+
+  function buildTarget(date){
+    var mo = date.getMonth()+1, da = date.getDate(), fy = date.getFullYear();
+    var M = cfg.padMonth ? pad2(mo) : String(mo);
+    var D = cfg.padDay ? pad2(da) : String(da);
+    var Y = cfg.year==4 ? String(fy) : pad2(fy % 100);
+    var h = date.getHours();
+    if(!cfg.h24){ h = h % 12; if(h===0) h = 12; }
+    var H = cfg.padHour ? pad2(h) : String(h);
+    var Mi = pad2(date.getMinutes());
+    var S = pad2(date.getSeconds());
+    var dateStr = cfg.order==="MDY" ? (M+D+Y) : cfg.order==="DMY" ? (D+M+Y) : (Y+M+D);
+    var timeStr = H + Mi + (cfg.seconds ? S : "");
+    var combined = cfg.timeFirst ? (timeStr + dateStr) : (dateStr + timeStr);
+    var num = Number(combined);   // leading zeros drop naturally
+    var readback = M + "/" + D + "/" + Y + "  " + H + ":" + Mi + (cfg.seconds ? ":"+S : "") + (cfg.h24 ? "" : (date.getHours()<12?" AM":" PM"));
+    return { str:combined, num:num, readback:readback };
+  }
+
+  function arm(){
+    // Read the number currently on screen as C
+    var C = toNum();
+    if(!isFinite(C)) C = 0;
+    var t = buildTarget(new Date(Date.now() + (cfg.mode==="genuine" ? cfg.offset*1000 : 0)));
+    var target = t.num;
+    var diff = target - Math.round(C);
+    var op = diff >= 0 ? "add" : "sub";
+    var operand = Math.abs(diff);
+
+    armed.active = true;
+    armed.target = target;
+    armed.readback = t.readback;
+    armed.num = target;
+    armed.op = op;
+    armed.queue = String(operand);
+    armed.idx = 0;
+    armed.revealAt = Date.now() + (cfg.mode==="genuine" ? cfg.offset*1000 : 0);
+
+    // Pre-load the pending operation so the very first spectator tap shows a digit
+    previous = Math.round(C);
+    operator = op;
+    waitingForOperand = true;
+    justEvaluated = false;
+
+    updateTell();
+    startHud();
+    render();
+  }
+
+  function disarm(reveal){
+    armed.active = false;
+    if(armed.tickTimer){ clearInterval(armed.tickTimer); armed.tickTimer = null; }
+    updateTell();
+    document.getElementById("hud").classList.remove("on");
+  }
+
+  // A spectator taps any key (except "="): emit the next forced digit.
+  function forcedTap(){
+    if(armed.idx < armed.queue.length){
+      inputDigit(armed.queue.charAt(armed.idx));
+      armed.idx++;
+    }
+    // once the difference is fully entered, further taps do nothing (display holds)
+    updateHud();
+  }
+
+  function reveal(){
+    if(cfg.mode === "live"){
+      // Recompute at the moment of reveal for a perfect clock match
+      var t = buildTarget(new Date());
+      current = String(t.num);
+      previous = null; operator = null; waitingForOperand = false; justEvaluated = true;
+      armed.readback = t.readback;
+      render();
+    } else if(cfg.snap){
+      // Guarantee: force the exact target regardless of taps entered
+      current = String(armed.target);
+      previous = null; operator = null; waitingForOperand = false; justEvaluated = true;
+      render();
+    } else {
+      // Pure genuine arithmetic: previous op operand
+      equals();
+    }
+    disarm(true);
+  }
+
+  // ---------- Tell + HUD ----------
+  function updateTell(){
+    var el = document.getElementById("tell");
+    if(armed.active && cfg.tell !== "off"){
+      el.style.background = cfg.tell === "obvious" ? "#ff3b30" : "#141414";
+      if(cfg.tell === "obvious"){ el.style.width="8px"; el.style.height="8px"; }
+    } else {
+      el.style.background = "transparent";
+      el.style.width="6px"; el.style.height="6px";
+    }
+  }
+
+  function hudColor(){
+    return cfg.hudBright==="bright" ? "#7a7a7a" : cfg.hudBright==="med" ? "#4a4a4a" : "#2c2c2c";
+  }
+
+  function startHud(){
+    var hud = document.getElementById("hud");
+    if(!cfg.hud){ hud.classList.remove("on"); return; }
+    hud.style.color = hudColor();
+    hud.classList.add("on");
+    updateHud();
+    if(armed.tickTimer) clearInterval(armed.tickTimer);
+    armed.tickTimer = setInterval(updateHud, 250);
+  }
+
+  function updateHud(){
+    if(!armed.active) return;
+    var hud = document.getElementById("hud");
+    var remaining = Math.max(0, armed.queue.length - armed.idx);
+    var line1 = "reveal: " + armed.readback;
+    var line2;
+    if(cfg.mode === "live"){
+      line2 = "press = anytime · taps left: " + remaining;
+    } else {
+      var msLeft = armed.revealAt - Date.now();
+      var target = new Date(armed.revealAt);
+      var now = new Date();
+      var sameMinute = target.getMinutes()===now.getMinutes() && target.getHours()===now.getHours() && target.toDateString()===now.toDateString();
+      var win;
+      if(sameMinute){ win = "★ WINDOW OPEN — press ="; }
+      else if(msLeft > 0){ win = "in " + Math.ceil(msLeft/1000) + "s"; }
+      else { win = "window passed — re-arm"; }
+      line2 = "add " + fmt(String(Number(armed.queue))) + " · taps left: " + remaining + " · " + win;
+    }
+    hud.textContent = line1 + "\n" + line2;
+  }
+
+  // ---------- Key handling ----------
+  var keypad = document.getElementById("keypad");
+  keypad.addEventListener("click", function(e){
+    var btn = e.target.closest(".key");
+    if(!btn) return;
+    var k = btn.getAttribute("data-k");
+    flash(btn);
+
+    // Update AC/C label handling (simple: always AC)
+    if(armed.active){
+      if(k === "equals"){ reveal(); return; }
+      // Any other key advances the hidden sequence
+      forcedTap();
+      return;
+    }
+
+    switch(k){
+      case "clear": clearAll(); break;
+      case "negate": negate(); break;
+      case "percent": percent(); break;
+      case "add": case "sub": case "mul": case "div": setOperator(k); break;
+      case "equals": equals(); break;
+      case "dot": inputDigit("."); break;
+      default: inputDigit(k);
+    }
+  });
+
+  function flash(btn){
+    btn.classList.add("pressed");
+    setTimeout(function(){ btn.classList.remove("pressed"); }, 90);
+  }
+
+  // ---------- Secret hotspot: tap = arm/disarm, long-press = settings ----------
+  var hotspot = document.getElementById("hotspot");
+  var pressTimer = null, longPressed = false;
+
+  function hsStart(e){
+    longPressed = false;
+    pressTimer = setTimeout(function(){
+      longPressed = true;
+      openSheet();
+    }, 600);
+  }
+  function hsEnd(e){
+    if(pressTimer){ clearTimeout(pressTimer); pressTimer = null; }
+    if(longPressed) return;
+    // short tap toggles arm
+    if(armed.active) disarm(false);
+    else arm();
+  }
+  hotspot.addEventListener("touchstart", function(e){ e.preventDefault(); hsStart(e); }, {passive:false});
+  hotspot.addEventListener("touchend", function(e){ e.preventDefault(); hsEnd(e); }, {passive:false});
+  hotspot.addEventListener("mousedown", hsStart);
+  hotspot.addEventListener("mouseup", hsEnd);
+  hotspot.addEventListener("mouseleave", function(){ if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } });
+
+  // Allow opening setup from URL hash for first-time configuration
+  if(location.hash === "#setup") { setTimeout(openSheet, 200); }
+
+  // ---------- Settings sheet ----------
+  var sheet = document.getElementById("sheet");
+  var previewTimer = null;
+
+  function bindUI(){
+    document.getElementById("cfgOrder").value = cfg.order;
+    document.getElementById("cfgPadMonth").checked = cfg.padMonth;
+    document.getElementById("cfgPadDay").checked = cfg.padDay;
+    document.getElementById("cfgYear").value = String(cfg.year);
+    document.getElementById("cfgH24").checked = cfg.h24;
+    document.getElementById("cfgPadHour").checked = cfg.padHour;
+    document.getElementById("cfgSeconds").checked = cfg.seconds;
+    document.getElementById("cfgTimeFirst").checked = cfg.timeFirst;
+    document.getElementById("cfgMode").value = cfg.mode;
+    document.getElementById("cfgOffset").value = cfg.offset;
+    document.getElementById("cfgSnap").checked = cfg.snap;
+    document.getElementById("cfgTell").value = cfg.tell;
+    document.getElementById("cfgHud").checked = cfg.hud;
+    document.getElementById("cfgHudBright").value = cfg.hudBright;
+  }
+  function readUI(){
+    cfg.order = document.getElementById("cfgOrder").value;
+    cfg.padMonth = document.getElementById("cfgPadMonth").checked;
+    cfg.padDay = document.getElementById("cfgPadDay").checked;
+    cfg.year = Number(document.getElementById("cfgYear").value);
+    cfg.h24 = document.getElementById("cfgH24").checked;
+    cfg.padHour = document.getElementById("cfgPadHour").checked;
+    cfg.seconds = document.getElementById("cfgSeconds").checked;
+    cfg.timeFirst = document.getElementById("cfgTimeFirst").checked;
+    cfg.mode = document.getElementById("cfgMode").value;
+    cfg.offset = Math.max(0, Math.min(600, Number(document.getElementById("cfgOffset").value)||0));
+    cfg.snap = document.getElementById("cfgSnap").checked;
+    cfg.tell = document.getElementById("cfgTell").value;
+    cfg.hud = document.getElementById("cfgHud").checked;
+    cfg.hudBright = document.getElementById("cfgHudBright").value;
+  }
+
+  function updatePreview(){
+    readUI();
+    var t = buildTarget(new Date());
+    document.getElementById("pvNum").textContent = fmt(String(t.num));
+    document.getElementById("pvRead").textContent = t.readback;
+  }
+
+  function openSheet(){
+    bindUI();
+    sheet.classList.add("on");
+    updatePreview();
+    if(previewTimer) clearInterval(previewTimer);
+    previewTimer = setInterval(updatePreview, 1000);
+    // live-update preview as options change
+    sheet.querySelectorAll("input,select").forEach(function(el){
+      el.addEventListener("change", updatePreview);
+    });
+  }
+  function closeSheet(){
+    sheet.classList.remove("on");
+    if(previewTimer){ clearInterval(previewTimer); previewTimer = null; }
+  }
+
+  document.getElementById("btnSave").addEventListener("click", function(){
+    readUI(); save(); updateTell(); closeSheet();
+  });
+  document.getElementById("btnClose").addEventListener("click", function(){
+    closeSheet();
+  });
+
+  // ---------- init ----------
+  render();
+  updateTell();
+})();
+</script>
+</body>
+</html>
