@@ -75,6 +75,8 @@
   .log-btn { padding:4px 12px; border:1px solid var(--accent); border-radius:4px; background:transparent; color:var(--accent); font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.1em; cursor:pointer; transition:all .15s; white-space:nowrap; }
   .log-btn:hover { background:var(--accent); color:#0d0d0d; }
   .pr-badge { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent2); background:rgba(255,107,53,.12); padding:3px 8px; border-radius:4px; white-space:nowrap; }
+  .ss-pill { font-family:'DM Mono',monospace; font-size:9px; color:#0d0d0d; background:var(--accent2); padding:2px 7px; border-radius:4px; white-space:nowrap; font-weight:600; }
+  .opt-pill { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); border:1px dashed var(--border2); padding:2px 7px; border-radius:4px; white-space:nowrap; }
   .block-toggle { font-size:14px; color:var(--muted); transition:transform .2s; margin-left:4px; }
   .block.open .block-toggle { transform:rotate(180deg); }
   .block-body { display:none; padding:0 16px 14px; border-top:1px solid var(--border); }
@@ -199,9 +201,13 @@
 <body>
 
 <header>
-  <div class="label">7-Day Training Plan</div>
+  <div class="label">Hybrid Training · Two Programs</div>
   <h1>Hybrid<br><span>Athlete</span></h1>
-  <p class="subtitle">ABC strength block — 3 full-body days (squat / hinge / unilateral). Strength leads; running is easy support with one quality run folded into Wednesday. Log weights — history shows on every exercise.</p>
+  <p class="subtitle" id="subtitle"></p>
+  <div class="header-nav" id="program-nav">
+    <button class="nav-btn prog-btn active" onclick="switchProgram('fb',this)">3× Full Body</button>
+    <button class="nav-btn prog-btn" onclick="switchProgram('ulul',this)">4× ULUL</button>
+  </div>
   <div class="header-nav">
     <button class="nav-btn active" id="btn-workout" onclick="switchView('workout',this)">Workout Plan</button>
     <button class="nav-btn" onclick="switchView('progress',this)">Progress</button>
@@ -209,24 +215,10 @@
 </header>
 
 <div class="view active" id="view-workout">
-  <div class="week-strip">
-    <div class="day-pill active" onclick="setDay(1)"><div class="pill-label">Mon</div><div class="pill-num">01</div><div class="pill-type">Strength A</div></div>
-    <div class="day-pill" onclick="setDay(2)"><div class="pill-label">Tue</div><div class="pill-num">02</div><div class="pill-type">Easy Run</div></div>
-    <div class="day-pill" onclick="setDay(3)"><div class="pill-label">Wed</div><div class="pill-num">03</div><div class="pill-type">Run + Str B</div></div>
-    <div class="day-pill" onclick="setDay(4)"><div class="pill-label">Thu</div><div class="pill-num">04</div><div class="pill-type">Rest</div></div>
-    <div class="day-pill" onclick="setDay(5)"><div class="pill-label">Fri</div><div class="pill-num">05</div><div class="pill-type">Strength C</div></div>
-    <div class="day-pill" onclick="setDay(6)"><div class="pill-label">Sat</div><div class="pill-num">06</div><div class="pill-type">Easy / Rest</div></div>
-    <div class="day-pill" onclick="setDay(7)"><div class="pill-label">Sun</div><div class="pill-num">07</div><div class="pill-type">Long Run</div></div>
+  <div class="week-strip" id="week-strip">
   </div>
   <div class="main">
-    <aside class="sidebar">
-      <div class="sidebar-item active" onclick="setDay(1)"><div class="si-day">Mon · Day 01</div><div class="si-title">Full Body Strength A</div><span class="si-tag tag-strength">Squat Focus</span></div>
-      <div class="sidebar-item" onclick="setDay(2)"><div class="si-day">Tue · Day 02</div><div class="si-title">Easy Zone 2</div><span class="si-tag tag-run">Easy Run</span></div>
-      <div class="sidebar-item" onclick="setDay(3)"><div class="si-day">Wed · Day 03</div><div class="si-title">Quality Run + Strength B</div><span class="si-tag tag-strength">Double · Hinge</span></div>
-      <div class="sidebar-item" onclick="setDay(4)"><div class="si-day">Thu · Day 04</div><div class="si-title">Full Rest</div><span class="si-tag tag-run">Recovery</span></div>
-      <div class="sidebar-item" onclick="setDay(5)"><div class="si-day">Fri · Day 05</div><div class="si-title">Full Body Strength C</div><span class="si-tag tag-strength">Uni · Reactive</span></div>
-      <div class="sidebar-item" onclick="setDay(6)"><div class="si-day">Sat · Day 06</div><div class="si-title">Easy Zone 2 or Rest</div><span class="si-tag tag-run">Optional</span></div>
-      <div class="sidebar-item" onclick="setDay(7)"><div class="si-day">Sun · Day 07</div><div class="si-title">Long Run</div><span class="si-tag tag-run">Aerobic Anchor</span></div>
+    <aside class="sidebar" id="sidebar">
     </aside>
     <div class="content" id="workout-content"></div>
   </div>
@@ -276,9 +268,9 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const DAYS = [
+const DAYS_FB = [
   {
-    id:1, title:'Full Body Strength A', subtitle:'Mon · Squat Focus', type:'strength',
+    id:1, title:'Full Body Strength A', subtitle:'Mon · Squat Focus', type:'strength', pill:'Strength A', tag:'Squat Focus', tagType:'strength',
     desc:'Squat anchor on fresh legs. Mains: add load weekly, stay 2–4 RIR — do not grind. Accessories 1–3 RIR · isolation to failure.',
     warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch (daily, incl. rest days)','Banded lateral walk','Short-foot + big-toe drill'],
     slots:[
@@ -305,7 +297,7 @@ const DAYS = [
     ]
   },
   {
-    id:2, title:'Easy Zone 2 Run', subtitle:'Tue · Easy Run', type:'run',
+    id:2, title:'Easy Zone 2 Run', subtitle:'Tue · Easy Run', type:'run', pill:'Easy Run', tag:'Easy Run', tagType:'run',
     desc:'Easy aerobic only. Keep it conversational — this protects tomorrow\'s quality run and keeps your legs fresh for the week.',
     runCards:[
       { title:'Zone 2 Easy Run', stats:['30–45 min','Zone 2','conversational'],
@@ -317,7 +309,7 @@ const DAYS = [
     ]
   },
   {
-    id:3, title:'Double — Quality Run + Strength B', subtitle:'Wed · AM Run / PM Hinge', type:'double',
+    id:3, title:'Double — Quality Run + Strength B', subtitle:'Wed · AM Run / PM Hinge', type:'double', pill:'Run + Str B', tag:'Double · Hinge', tagType:'strength',
     desc:'AM: the only quality run of the week. PM: Strength B, ideally 6+ hrs later. Hinge is paired with the hard run on purpose — you load a different pattern than the run just fatigued. Both sessions run slightly submaximal; that is the trade for a clean rest day tomorrow.',
     warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill'],
     runCards:[
@@ -357,7 +349,7 @@ const DAYS = [
     ]
   },
   {
-    id:4, title:'Full Rest', subtitle:'Thu · Recovery', type:'rest',
+    id:4, title:'Full Rest', subtitle:'Thu · Recovery', type:'rest', pill:'Rest', tag:'Recovery', tagType:'run',
     desc:'Full rest — the day the Wednesday double buys back. This is where the strength adaptation actually happens. Optional light mobility only.',
     runCards:[
       { title:'Rest & Recover', stats:['Recovery day'],
@@ -369,7 +361,7 @@ const DAYS = [
     ]
   },
   {
-    id:5, title:'Full Body Strength C', subtitle:'Fri · Unilateral / Reactive', type:'strength',
+    id:5, title:'Full Body Strength C', subtitle:'Fri · Unilateral / Reactive', type:'strength', pill:'Strength C', tag:'Uni · Reactive', tagType:'strength',
     desc:'Unilateral + reactive on fresh legs (Thursday rest sets this up). The runner day — single-leg strength, tendon stiffness, lower leg. Mains 2–3 RIR · isolation to failure.',
     warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill'],
     slots:[
@@ -394,7 +386,7 @@ const DAYS = [
     ]
   },
   {
-    id:6, title:'Easy Zone 2 or Rest', subtitle:'Sat · Optional', type:'run',
+    id:6, title:'Easy Zone 2 or Rest', subtitle:'Sat · Optional', type:'run', pill:'Easy / Rest', tag:'Optional', tagType:'run',
     desc:'Easy Z2 or rest — read your legs. Nothing hard. Circulation and aerobic base ahead of Sunday long run.',
     runCards:[
       { title:'Easy Z2 (or take the day off)', stats:['30–40 min','Zone 2','optional'],
@@ -403,7 +395,7 @@ const DAYS = [
     ]
   },
   {
-    id:7, title:'Long Run', subtitle:'Sun · Aerobic Anchor', type:'run',
+    id:7, title:'Long Run', subtitle:'Sun · Aerobic Anchor', type:'run', pill:'Long Run', tag:'Aerobic Anchor', tagType:'run',
     desc:'Weekly aerobic anchor — kept mostly easy while strength leads. Save negative-split and tempo finishes for when running becomes the priority again.',
     runCards:[
       { title:'Long Run — Mostly Easy', stats:['75–100 min','Zone 2'],
@@ -421,6 +413,160 @@ const DAYS = [
   },
 ];
 
+const DAYS_ULUL = [
+  {
+    id:1, title:'Lower A — Knee Heavy', subtitle:'Mon · Squat-Biased', type:'strength', pill:'Lower A', tag:'Squat-Biased', tagType:'strength',
+    desc:'Heavy knee on the freshest legs of the week — furthest from the weekend long run. One heavy compound with full rest, then supersets to hold it near 55 min. Mains 2–3 RIR. Pick ONE plyo from the menu (one per session, rotate weekly). Orange ⚡ pairs = do back to back.',
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill'],
+    slots:[
+      { id:'la1', idx:'1', cat:'Plyo Primer', primary:'Box Jumps', sets:'3×3-5 · crisp',
+        alts:[{name:'Broad Jumps',sets:'3×4'},{name:'Squat Jumps',sets:'3×5'},{name:'Tuck Jumps',sets:'3×5'},{name:'Depth Jumps',sets:'3×4'},{name:'Hurdle Hops',sets:'3×5'},{name:'Pogo Hops',sets:'3×10'},{name:'Single-Leg Pogos',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Lateral Bounds',sets:'3×5 each'},{name:'Standing Long Jump',sets:'3×3'},{name:'A-Skips',sets:'3×20m'}] },
+      { id:'la2', idx:'2', cat:'Heavy Knee', primary:'Back Squat', sets:'4×3-5 · 2-3 RIR · full rest',
+        alts:[{name:'Front Squat',sets:'4×4'},{name:'Safety Bar Squat',sets:'4×5'},{name:'Hack Squat',sets:'4×6'},{name:'Leg Press',sets:'4×8'}] },
+      { id:'la3', idx:'3', cat:'Light Hinge', primary:'Barbell Hip Thrust', sets:'3×8-12 · moderate',
+        alts:[{name:'Cable Pull-Through',sets:'3×12'},{name:'Romanian Deadlift (light)',sets:'3×8'},{name:'Single-Leg Hip Thrust',sets:'3×10 each'},{name:'45° Back Extension',sets:'3×12'},{name:'Good Morning',sets:'3×10'}] },
+      { id:'la4', idx:'4', cat:'Unilateral Knee', primary:'Bulgarian Split Squat', sets:'3×8 each · 2-3 RIR',
+        alts:[{name:'Reverse Lunge',sets:'3×8 each'},{name:'Loaded Step-Up',sets:'3×8 each'},{name:'Walking Lunge',sets:'3×10 each'}] },
+      { id:'la5', idx:'5', cat:'Lower Leg', ss:'SS1', primary:'Bent-Knee Calf Raise', sets:'2-3×12-15',
+        alts:[{name:'Seated Calf Raise',sets:'3×15'},{name:'Single-Leg Calf Raise',sets:'3×12 each'}] },
+      { id:'la6', idx:'6', cat:'Lower Leg', ss:'SS1', primary:'Tibialis Raise', sets:'2-3×15-20',
+        alts:[{name:'Tib-Bar Dorsiflexion',sets:'3×15'},{name:'Banded Dorsiflexion',sets:'3×20'}] },
+      { id:'la7', idx:'7', cat:'Core', ss:'SS2', primary:'Copenhagen Plank', sets:'2-3×20-30 sec each',
+        alts:[{name:'Side Plank',sets:'3×30 sec each'},{name:'Adductor Squeeze',sets:'3×20 sec'}] },
+      { id:'la8', idx:'8', cat:'Core', ss:'SS2', primary:'Ab Wheel Rollout', sets:'2-3×8-10',
+        alts:[{name:'Dead Bug',sets:'3×8 each'},{name:'Pallof Press',sets:'3×10 each'},{name:'Hanging Leg Raise',sets:'3×10'}] },
+      { id:'la9', idx:'9', cat:'Mobility', opt:true, primary:'Hip Mobility Flow', sets:'home / optional',
+        alts:[{name:'90/90 Hip Switches',sets:'2×10'},{name:'Couch Stretch',sets:'2×60 sec each'}] },
+    ]
+  },
+  {
+    id:2, title:'Easy Run + Upper A', subtitle:'Tue · Easy Z2 / Push', type:'double', pill:'Run + Up A', tag:'Push · Easy Run', tagType:'strength',
+    desc:'Second easy run of the week, folded onto the push day where it costs your legs nothing. Run easy (AM ideal), lift after. One pressing anchor with full rest, then antagonist supersets to hold the lift near 45 min. Accessories 1–2 RIR.',
+    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap push-ups — 2×10','Light external rotation — 2×15'],
+    runCards:[
+      { title:'Zone 2 Easy Run', stats:['30–40 min','Zone 2','conversational'],
+        desc:'Free aerobic volume on a non-leg day. Keep it fully conversational — it should take nothing out of the lift.', alts:[] },
+    ],
+    slots:[
+      { id:'ua1', idx:'1', cat:'Horizontal Push', primary:'Bench Press', sets:'4×4-6 · 2-3 RIR · full rest',
+        alts:[{name:'DB Bench Press',sets:'4×8'},{name:'Incline BB Press',sets:'4×6'},{name:'Weighted Dip',sets:'3×8'}] },
+      { id:'ua2', idx:'2', cat:'Vertical Press', ss:'SS1', primary:'DB Shoulder Press', sets:'3×6-10',
+        alts:[{name:'Arnold Press',sets:'3×10'},{name:'Landmine Press',sets:'3×10 each'},{name:'Push Press',sets:'4×5'}] },
+      { id:'ua3', idx:'3', cat:'Horizontal Pull', ss:'SS1', primary:'Chest-Supported Row', sets:'3×8-12',
+        alts:[{name:'DB Row',sets:'4×8 each'},{name:'Cable Row',sets:'4×10'},{name:'Barbell Row',sets:'3×10'}] },
+      { id:'ua4', idx:'4', cat:'Side Delt', ss:'SS2', primary:'Cable Lateral Raise', sets:'3×12-15',
+        alts:[{name:'DB Lateral Raise',sets:'3×15'},{name:'Machine Lateral Raise',sets:'3×15'}] },
+      { id:'ua5', idx:'5', cat:'Rear Delt', ss:'SS2', primary:'Rear Delt Fly', sets:'3×12-15',
+        alts:[{name:'Reverse Pec-Deck',sets:'3×15'},{name:'Face Pulls',sets:'3×15'},{name:'Band Pull-Aparts',sets:'3×20'}] },
+      { id:'ua6', idx:'6', cat:'Triceps', ss:'SS2', primary:'Triceps Pushdown', sets:'3×10-12',
+        alts:[{name:'Overhead Triceps Ext',sets:'3×12'},{name:'Cable Kickback',sets:'2×15'}] },
+      { id:'ua7', idx:'7', cat:'Carry', primary:'Farmer Carry', sets:'3×50 steps · ½ BW',
+        alts:[{name:'Suitcase Carry',sets:'3×30m each'},{name:'Trap-Bar Carry',sets:'3×40m'}] },
+    ]
+  },
+  {
+    id:3, title:'Easy Run or Rest', subtitle:'Wed · Aerobic Buffer', type:'run', pill:'Easy Run', tag:'Buffer', tagType:'run',
+    desc:'Easy Z2 or rest — the buffer before Thursday quality run. Fully conversational. If Monday and Tuesday piled up, take the day off with no guilt.',
+    runCards:[
+      { title:'Zone 2 Easy Run', stats:['30–45 min','Zone 2','conversational'],
+        desc:'Truly easy. Protects Thursday hard run.', alts:[] },
+      { title:'Optional Mobility', stats:['~10 min'], desc:'',
+        alts:['Couch stretch — 2×60 sec each','90/90 hip switches — 2×10','Ankle rocks — 2×10 each'] },
+    ]
+  },
+  {
+    id:4, title:'Double — Quality Run + Upper B', subtitle:'Thu · AM Run / PM Pull', type:'double', pill:'Run + Up B', tag:'Double · Pull', tagType:'strength',
+    desc:'The weekly hard run in the AM, upper-pull lift in the PM, 6+ hrs apart. Pairing the hard run with an UPPER day keeps it off your legs — this is the clean double. Antagonist supersets hold the lift near 45 min.',
+    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap pull-ups — 2×8','Cat-cow — 2×8'],
+    runCards:[
+      { title:'Quality Run — AM', stats:['Pick one format','the weekly hard run'],
+        desc:'Your single quality session. Rotate formats week to week.',
+        structuredAlts:[
+          { title:'Classic Cruise Intervals', detail:'5 × 1,000m @ threshold · 60 sec rest' },
+          { title:'Broken Tempo', detail:'3 × 8 min @ tempo · 2 min easy jog between' },
+          { title:'Mile Repeats', detail:'4 × 1 mile @ threshold · 90 sec rest' },
+          { title:'Fartlek Threshold', detail:'20 min: 3 min hard / 2 min easy · repeat × 4' },
+          { title:'Acceleration Run', detail:'5 × 2 min building Z1 to Z4 · 3 min easy between' },
+          { title:'Hill Threshold', detail:'6 × 3 min uphill @ threshold · jog down' },
+        ] },
+    ],
+    slots:[
+      { id:'ub1', idx:'1', cat:'Vertical Pull', primary:'Weighted Pull-Up', sets:'3×5-8 · 1-3 RIR',
+        alts:[{name:'Chin-Ups',sets:'3×5-8'},{name:'Lat Pulldown',sets:'4×8'},{name:'Neutral-Grip Pull-Up',sets:'3×6'}] },
+      { id:'ub2', idx:'2', cat:'Horizontal Pull', ss:'SS1', primary:'Barbell Row', sets:'3×8-12',
+        alts:[{name:'DB Row',sets:'4×8 each'},{name:'Cable Row',sets:'4×10'},{name:'Chest-Supported Row',sets:'3×10'}] },
+      { id:'ub3', idx:'3', cat:'Horizontal Push', ss:'SS1', primary:'Incline DB Press', sets:'3×8-12',
+        alts:[{name:'Incline BB Press',sets:'3×8'},{name:'Weighted Push-Up',sets:'3×12'},{name:'DB Bench Press',sets:'3×10'}] },
+      { id:'ub4', idx:'4', cat:'Side Delt', ss:'SS2', primary:'Cable Lateral Raise', sets:'3×12-15',
+        alts:[{name:'DB Lateral Raise',sets:'3×15'},{name:'Machine Lateral Raise',sets:'3×15'}] },
+      { id:'ub5', idx:'5', cat:'Rear Delt', ss:'SS2', primary:'Face Pulls', sets:'3×12-15',
+        alts:[{name:'Reverse Pec-Deck',sets:'3×15'},{name:'Band Pull-Aparts',sets:'3×20'}] },
+      { id:'ub6', idx:'6', cat:'Biceps', ss:'SS2', primary:'Incline DB Curl', sets:'3×10-12',
+        alts:[{name:'Cable Curl',sets:'3×12'},{name:'Hammer Curl',sets:'3×12'},{name:'Barbell Curl',sets:'3×10'}] },
+      { id:'ub7', idx:'7', cat:'Carry', primary:'Overhead Farmer Carry', sets:'3×50 steps · ¼ BW',
+        alts:[{name:'Waiter Walk',sets:'3×30m each'},{name:'Suitcase Carry',sets:'3×30m each'}] },
+    ]
+  },
+  {
+    id:5, title:'Lower B — Hinge Heavy', subtitle:'Fri · Deadlift-Biased', type:'strength', pill:'Lower B', tag:'Deadlift-Biased', tagType:'strength',
+    desc:'Heavy hinge with a rest day right after (Sat), so it does not bleed into the long run. Nordic kept to 2 easy sets since the deadlift already hit hamstrings hard. Supersets hold it near 55 min. Mains 2–3 RIR. Pick ONE plyo from the menu.',
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill'],
+    slots:[
+      { id:'lb1', idx:'1', cat:'Plyo Primer', primary:'Broad Jumps', sets:'3×4 · crisp',
+        alts:[{name:'Box Jumps',sets:'3×3-5'},{name:'Squat Jumps',sets:'3×5'},{name:'Tuck Jumps',sets:'3×5'},{name:'Depth Jumps',sets:'3×4'},{name:'Hurdle Hops',sets:'3×5'},{name:'Pogo Hops',sets:'3×10'},{name:'Single-Leg Pogos',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Lateral Bounds',sets:'3×5 each'},{name:'Standing Long Jump',sets:'3×3'},{name:'A-Skips',sets:'3×20m'}] },
+      { id:'lb2', idx:'2', cat:'Heavy Hinge', primary:'Trap Bar Deadlift', sets:'4×3-5 · 2-3 RIR · full rest',
+        alts:[{name:'Romanian Deadlift',sets:'4×5'},{name:'Conventional Deadlift',sets:'4×3'},{name:'Sumo Deadlift',sets:'4×4'}] },
+      { id:'lb3', idx:'3', cat:'Light Knee', primary:'Goblet Squat', sets:'3×8-10 · moderate',
+        alts:[{name:'Front Squat',sets:'3×8'},{name:'Leg Press',sets:'3×10'},{name:'Heel-Elevated Goblet',sets:'3×10'}] },
+      { id:'lb4', idx:'4', cat:'Unilateral Hinge', primary:'Single-Leg RDL', sets:'3×8-10 each',
+        alts:[{name:'B-Stance RDL',sets:'3×10 each'},{name:'Single-Leg Hip Thrust',sets:'3×10 each'}] },
+      { id:'lb5', idx:'5', cat:'Posterior Chain', ss:'SS1', primary:'Nordic Curl', sets:'2 sets · not to failure',
+        alts:[{name:'Lying Leg Curl',sets:'3×10'},{name:'Slider Ham Curl',sets:'3×10'}] },
+      { id:'lb6', idx:'6', cat:'Core', ss:'SS1', primary:'Pallof Press', sets:'2-3×10-12 each',
+        alts:[{name:'Cable Woodchop',sets:'3×10 each'},{name:'Bird-Dog',sets:'3×10 each'}] },
+      { id:'lb7', idx:'7', cat:'Adductor', ss:'SS1', primary:'Copenhagen Plank', sets:'2-3×20-30 sec each',
+        alts:[{name:'Adductor Machine',sets:'3×12'},{name:'Cable Hip Adduction',sets:'3×12 each'},{name:'Side-Lying Adduction',sets:'3×15 each'}] },
+      { id:'lb8', idx:'8', cat:'Lower Leg', ss:'SS2', primary:'Standing Calf Raise', sets:'2-3×12-15',
+        alts:[{name:'Seated Calf Raise',sets:'3×15'},{name:'Single-Leg Calf Raise',sets:'3×12 each'}] },
+      { id:'lb9', idx:'9', cat:'Lower Leg', ss:'SS2', primary:'Tibialis Raise', sets:'2-3×15-20',
+        alts:[{name:'Tib-Bar Dorsiflexion',sets:'3×15'}] },
+      { id:'lb10', idx:'10', cat:'Mobility', opt:true, primary:'Hip Mobility Flow', sets:'home / optional',
+        alts:[{name:'90/90 Hip Switches',sets:'2×10'},{name:'Couch Stretch',sets:'2×60 sec each'}] },
+    ]
+  },
+  {
+    id:6, title:'Full Rest', subtitle:'Sat · Recovery', type:'rest', pill:'Rest', tag:'Recovery', tagType:'run',
+    desc:'Full rest between Friday heavy hinge and the Sunday long run. Sauna, mobility, walk, eat, sleep. This spacing is what keeps the long run off tired deadlift legs.',
+    runCards:[
+      { title:'Rest & Recover', stats:['Recovery day'],
+        desc:'No training. Optional easy walk or mobility only.', alts:[] },
+      { title:'Optional Mobility (if restless)', stats:['~10 min'], desc:'',
+        alts:['Couch stretch — 2×60 sec each','Foam roll quads / calves — 5 min','Easy walk — 20–30 min'] },
+    ]
+  },
+  {
+    id:7, title:'Long Run', subtitle:'Sun · Aerobic Anchor', type:'run', pill:'Long Run', tag:'Aerobic Anchor', tagType:'run',
+    desc:'Weekly aerobic anchor on legs rested by Saturday. Mostly easy. Fuel every ~45 min. Can swap with Saturday if needed, but Sunday gives the most separation from Friday deadlifts.',
+    runCards:[
+      { title:'Long Run — Mostly Easy', stats:['75–110 min','Zone 2'],
+        desc:'Steady easy effort. Form and breathing focus.', alts:[] },
+      { title:'Optional Finish (only if fresh)', stats:['final 10–15 min'],
+        desc:'Only if legs feel good — keep it light.',
+        structuredAlts:[
+          { title:'End Strides', detail:'6 × 30 sec strides · full walk recovery' },
+          { title:'Gentle Progression', detail:'last 15 min drift easy to moderate' },
+        ] },
+    ]
+  },
+];
+
+let ACTIVE = 'fb';
+let DAYS = DAYS_FB;
+const SUBTITLES = {
+  fb: 'ABC · 3 full-body days (squat / hinge / unilateral). Strength leads; running is easy support. Log weights — history shows on every exercise.',
+  ulul: 'ULUL · 4 days, Upper/Lower ×2 with running baked in. Heavy once, light-variation once per pattern. ⚡ = superset. Shares logged history with the 3× program.'
+};
+
 // ─────────────────────────────────────────
 // STORAGE
 // ─────────────────────────────────────────
@@ -429,9 +575,35 @@ let db = {};
 
 function loadDB() {
   try { const r = localStorage.getItem(STORAGE_KEY); if (r) db = JSON.parse(r); } catch(e) { db = {}; }
+  document.getElementById('subtitle').innerHTML = SUBTITLES[ACTIVE];
+  renderNav();
   renderWorkout();
   refreshAllBadges();
   refreshAllHistories();
+}
+
+function renderNav() {
+  const dow = d => (d.subtitle.split('·')[0]||'').trim();
+  document.getElementById('week-strip').innerHTML = DAYS.map((d,i)=>
+    `<div class="day-pill${i===0?' active':''}" onclick="setDay(${d.id})"><div class="pill-label">${dow(d)}</div><div class="pill-num">0${d.id}</div><div class="pill-type">${d.pill||''}</div></div>`
+  ).join('');
+  document.getElementById('sidebar').innerHTML = DAYS.map((d,i)=>
+    `<div class="sidebar-item${i===0?' active':''}" onclick="setDay(${d.id})"><div class="si-day">${dow(d)} · Day 0${d.id}</div><div class="si-title">${d.title}</div><span class="si-tag tag-${d.tagType||'run'}">${d.tag||''}</span></div>`
+  ).join('');
+}
+
+function switchProgram(key, btn) {
+  ACTIVE = key;
+  DAYS = (key === 'ulul') ? DAYS_ULUL : DAYS_FB;
+  document.getElementById('subtitle').innerHTML = SUBTITLES[ACTIVE];
+  document.querySelectorAll('.prog-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderNav();
+  renderWorkout();
+  refreshAllBadges();
+  refreshAllHistories();
+  setDay(1);
+  if (document.getElementById('view-progress').classList.contains('active')) renderProgress();
 }
 
 function saveDB() {
@@ -471,7 +643,7 @@ function renderBlock(slot) {
   return `<div class="block is-primary-day" id="block-${slot.id}">
     <div class="block-header" onclick="toggleBlock(this)">
       <span class="block-index">${slot.idx}</span>
-      <span class="block-cat">${slot.cat}</span>
+      <span class="block-cat">${slot.cat}</span>${slot.ss?`<span class="ss-pill">⚡${slot.ss}</span>`:''}${slot.opt?'<span class="opt-pill">home/opt</span>':''}
       <span class="block-name"><span class="primary-pill">${slot.primary}</span><span class="primary-sets">${slot.sets}</span></span>
       <div class="block-actions">
         <button class="log-btn" onclick="openLog(event,'${slot.id}')">+ Log</button>
