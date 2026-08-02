@@ -77,6 +77,7 @@
   .pr-badge { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent2); background:rgba(255,107,53,.12); padding:3px 8px; border-radius:4px; white-space:nowrap; }
   .ss-pill { font-family:'DM Mono',monospace; font-size:9px; color:#0d0d0d; background:var(--accent2); padding:2px 7px; border-radius:4px; white-space:nowrap; font-weight:600; }
   .opt-pill { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); border:1px dashed var(--border2); padding:2px 7px; border-radius:4px; white-space:nowrap; }
+  .pat-pill { font-family:'DM Mono',monospace; font-size:9px; color:#9aa0a6; background:var(--surface3); border:1px solid var(--border2); padding:2px 7px; border-radius:4px; white-space:nowrap; text-transform:uppercase; letter-spacing:.05em; }
   .block-toggle { font-size:14px; color:var(--muted); transition:transform .2s; margin-left:4px; }
   .block.open .block-toggle { transform:rotate(180deg); }
   .block-body { display:none; padding:0 16px 14px; border-top:1px solid var(--border); }
@@ -272,7 +273,7 @@ const DAYS_FB = [
   {
     id:1, title:'Full Body Strength A', subtitle:'Mon · Squat Focus', type:'strength', pill:'Strength A', tag:'Squat Focus', tagType:'strength',
     desc:'Squat anchor on fresh legs. Mains: add load weekly, stay 2–4 RIR — do not grind. Accessories 1–3 RIR · isolation to failure.',
-    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch (daily, incl. rest days)','Banded lateral walk','Short-foot + big-toe drill'],
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch (daily, incl. rest days)','Banded lateral walk','Short-foot + big-toe drill','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
     slots:[
       { id:'s1a', idx:'1', cat:'Plyo Primer', primary:'Box Jumps', sets:'3×3-5 · crisp',
         alts:[{name:'Squat Jumps',sets:'3×5'},{name:'Broad Jumps',sets:'3×4'},{name:'Tuck Jumps',sets:'3×5'},{name:'Depth Drops',sets:'3×4'}] },
@@ -311,7 +312,7 @@ const DAYS_FB = [
   {
     id:3, title:'Double — Quality Run + Strength B', subtitle:'Wed · AM Run / PM Hinge', type:'double', pill:'Run + Str B', tag:'Double · Hinge', tagType:'strength',
     desc:'AM: the only quality run of the week. PM: Strength B, ideally 6+ hrs later. Hinge is paired with the hard run on purpose — you load a different pattern than the run just fatigued. Both sessions run slightly submaximal; that is the trade for a clean rest day tomorrow.',
-    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill'],
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
     runCards:[
       { title:'Quality Run — AM', stats:['Pick one format','the weekly hard run'],
         desc:'Your single quality session. Rotate formats week to week to keep the stimulus fresh.',
@@ -363,7 +364,7 @@ const DAYS_FB = [
   {
     id:5, title:'Full Body Strength C', subtitle:'Fri · Unilateral / Reactive', type:'strength', pill:'Strength C', tag:'Uni · Reactive', tagType:'strength',
     desc:'Unilateral + reactive on fresh legs (Thursday rest sets this up). The runner day — single-leg strength, tendon stiffness, lower leg. Mains 2–3 RIR · isolation to failure.',
-    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill'],
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
     slots:[
       { id:'s5a', idx:'1', cat:'Plyo · Reactive', primary:'Pogo Hops', sets:'3×10 · low vol, crisp',
         alts:[{name:'Single-Leg Hops',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Line Hops',sets:'3×20 sec'},{name:'Box Drop-to-Stick',sets:'3×4'}] },
@@ -415,46 +416,21 @@ const DAYS_FB = [
 
 const DAYS_ULUL = [
   {
-    id:1, title:'Lower A — Knee Heavy', subtitle:'Mon · Squat-Biased', type:'strength', pill:'Lower A', tag:'Squat-Biased', tagType:'strength',
-    desc:'Heavy knee on the freshest legs of the week — furthest from the weekend long run. One heavy compound with full rest, then supersets to hold it near 55 min. Mains 2–3 RIR. Pick ONE plyo from the menu (one per session, rotate weekly). Orange ⚡ pairs = do back to back.',
-    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill'],
-    slots:[
-      { id:'la1', idx:'1', cat:'Plyo Primer', primary:'Box Jumps', sets:'3×3-5 · crisp',
-        alts:[{name:'Broad Jumps',sets:'3×4'},{name:'Squat Jumps',sets:'3×5'},{name:'Tuck Jumps',sets:'3×5'},{name:'Depth Jumps',sets:'3×4'},{name:'Hurdle Hops',sets:'3×5'},{name:'Pogo Hops',sets:'3×10'},{name:'Single-Leg Pogos',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Lateral Bounds',sets:'3×5 each'},{name:'Standing Long Jump',sets:'3×3'},{name:'A-Skips',sets:'3×20m'}] },
-      { id:'la2', idx:'2', cat:'Heavy Knee', primary:'Back Squat', sets:'4×3-5 · 2-3 RIR · full rest',
-        alts:[{name:'Front Squat',sets:'4×4'},{name:'Safety Bar Squat',sets:'4×5'},{name:'Hack Squat',sets:'4×6'},{name:'Leg Press',sets:'4×8'}] },
-      { id:'la3', idx:'3', cat:'Light Hinge', primary:'Barbell Hip Thrust', sets:'3×8-12 · moderate',
-        alts:[{name:'Cable Pull-Through',sets:'3×12'},{name:'Romanian Deadlift (light)',sets:'3×8'},{name:'Single-Leg Hip Thrust',sets:'3×10 each'},{name:'45° Back Extension',sets:'3×12'},{name:'Good Morning',sets:'3×10'}] },
-      { id:'la4', idx:'4', cat:'Unilateral Knee', primary:'Bulgarian Split Squat', sets:'3×8 each · 2-3 RIR',
-        alts:[{name:'Reverse Lunge',sets:'3×8 each'},{name:'Loaded Step-Up',sets:'3×8 each'},{name:'Walking Lunge',sets:'3×10 each'}] },
-      { id:'la5', idx:'5', cat:'Lower Leg', ss:'SS1', primary:'Bent-Knee Calf Raise', sets:'2-3×12-15',
-        alts:[{name:'Seated Calf Raise',sets:'3×15'},{name:'Single-Leg Calf Raise',sets:'3×12 each'}] },
-      { id:'la6', idx:'6', cat:'Lower Leg', ss:'SS1', primary:'Tibialis Raise', sets:'2-3×15-20',
-        alts:[{name:'Tib-Bar Dorsiflexion',sets:'3×15'},{name:'Banded Dorsiflexion',sets:'3×20'}] },
-      { id:'la7', idx:'7', cat:'Core', ss:'SS2', primary:'Copenhagen Plank', sets:'2-3×20-30 sec each',
-        alts:[{name:'Side Plank',sets:'3×30 sec each'},{name:'Adductor Squeeze',sets:'3×20 sec'}] },
-      { id:'la8', idx:'8', cat:'Core', ss:'SS2', primary:'Ab Wheel Rollout', sets:'2-3×8-10',
-        alts:[{name:'Dead Bug',sets:'3×8 each'},{name:'Pallof Press',sets:'3×10 each'},{name:'Hanging Leg Raise',sets:'3×10'}] },
-      { id:'la9', idx:'9', cat:'Mobility', opt:true, primary:'Hip Mobility Flow', sets:'home / optional',
-        alts:[{name:'90/90 Hip Switches',sets:'2×10'},{name:'Couch Stretch',sets:'2×60 sec each'}] },
-    ]
-  },
-  {
-    id:2, title:'Easy Run + Upper A', subtitle:'Tue · Easy Z2 / Push', type:'double', pill:'Run + Up A', tag:'Push · Easy Run', tagType:'strength',
-    desc:'Second easy run of the week, folded onto the push day where it costs your legs nothing. Run easy (AM ideal), lift after. One pressing anchor with full rest, then antagonist supersets to hold the lift near 45 min. Accessories 1–2 RIR.',
-    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap push-ups — 2×10','Light external rotation — 2×15'],
+    id:1, title:'Upper A + Easy Run', subtitle:'Mon · Easy Z2 / Push', type:'double', pill:'Upper + Easy', tag:'Push · Easy Run', tagType:'strength',
+    desc:'Easy run + your press day. Two heavy presses — bench (horizontal) and overhead (vertical), full rest — then supersetted accessories. Optional ⚡SS3 runner garnish (plyo + soleus) restores those to 3×/week. Easy Z2 folds in free.',
+    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap push-ups — 2×10','Light external rotation — 2×15','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
     runCards:[
       { title:'Zone 2 Easy Run', stats:['30–40 min','Zone 2','conversational'],
-        desc:'Free aerobic volume on a non-leg day. Keep it fully conversational — it should take nothing out of the lift.', alts:[] },
+        desc:'Free aerobic volume on a non-leg day. Keep it fully conversational.', alts:[] },
     ],
     slots:[
       { id:'ua1', idx:'1', cat:'Horizontal Push', primary:'Bench Press', sets:'4×4-6 · 2-3 RIR · full rest',
         alts:[{name:'DB Bench Press',sets:'4×8'},{name:'Incline BB Press',sets:'4×6'},{name:'Weighted Dip',sets:'3×8'}] },
-      { id:'ua2', idx:'2', cat:'Vertical Press', ss:'SS1', primary:'DB Shoulder Press', sets:'3×6-10',
-        alts:[{name:'Arnold Press',sets:'3×10'},{name:'Landmine Press',sets:'3×10 each'},{name:'Push Press',sets:'4×5'}] },
+      { id:'ua2', idx:'2', cat:'Vertical Press', primary:'Barbell OHP', sets:'4×4-6 · 2-3 RIR · full rest',
+        alts:[{name:'Push Press',sets:'4×5'},{name:'Seated DB Shoulder Press',sets:'4×8'},{name:'Landmine Press',sets:'3×8 each'},{name:'Arnold Press',sets:'3×10'}] },
       { id:'ua3', idx:'3', cat:'Horizontal Pull', ss:'SS1', primary:'Chest-Supported Row', sets:'3×8-12',
         alts:[{name:'DB Row',sets:'4×8 each'},{name:'Cable Row',sets:'4×10'},{name:'Barbell Row',sets:'3×10'}] },
-      { id:'ua4', idx:'4', cat:'Side Delt', ss:'SS2', primary:'Cable Lateral Raise', sets:'3×12-15',
+      { id:'ua4', idx:'4', cat:'Side Delt', ss:'SS1', primary:'Cable Lateral Raise', sets:'3×12-15',
         alts:[{name:'DB Lateral Raise',sets:'3×15'},{name:'Machine Lateral Raise',sets:'3×15'}] },
       { id:'ua5', idx:'5', cat:'Rear Delt', ss:'SS2', primary:'Rear Delt Fly', sets:'3×12-15',
         alts:[{name:'Reverse Pec-Deck',sets:'3×15'},{name:'Face Pulls',sets:'3×15'},{name:'Band Pull-Aparts',sets:'3×20'}] },
@@ -462,33 +438,65 @@ const DAYS_ULUL = [
         alts:[{name:'Overhead Triceps Ext',sets:'3×12'},{name:'Cable Kickback',sets:'2×15'}] },
       { id:'ua7', idx:'7', cat:'Carry', primary:'Farmer Carry', sets:'3×50 steps · ½ BW',
         alts:[{name:'Suitcase Carry',sets:'3×30m each'},{name:'Trap-Bar Carry',sets:'3×40m'}] },
+      { id:'ua8', idx:'8', cat:'Runner · Plyo', ss:'SS3', opt:true, primary:'Pogo Hops', sets:'3×10 · optional 3rd expo',
+        alts:[{name:'Box Jumps',sets:'3×3-5'},{name:'Broad Jumps',sets:'3×4'},{name:'Single-Leg Pogos',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Ankle Hops',sets:'3×15'},{name:'A-Skips',sets:'3×20m'}] },
+      { id:'ua9', idx:'9', cat:'Runner · Soleus', ss:'SS3', opt:true, primary:'Bent-Knee Calf Raise', sets:'2-3×12-15 · optional 3rd expo',
+        alts:[{name:'Seated Calf Raise',sets:'3×15'},{name:'Single-Leg Calf Raise',sets:'3×12 each'}] },
     ]
   },
   {
-    id:3, title:'Easy Run or Rest', subtitle:'Wed · Aerobic Buffer', type:'run', pill:'Easy Run', tag:'Buffer', tagType:'run',
-    desc:'Easy Z2 or rest — the buffer before Thursday quality run. Fully conversational. If Monday and Tuesday piled up, take the day off with no guilt.',
+    id:2, title:'HARD DAY — Threshold + Squat Lower', subtitle:'Tue · Threshold + Squat', type:'double', pill:'Threshold + Lower', tag:'Hard Day · Squat', tagType:'strength',
+    desc:'Your one big HARD day — threshold run (AM, fresh legs) then squat-biased lower (PM, ideally 6+ hrs later). Run FIRST protects run quality; squat emphasis avoids re-loading the hamstrings and calves the run just taxed — the heavy deadlift stays on Friday. The KB swing here is explosive hinge power, kept snappy and low-rep. This is a long, taxing day by design; the trade is genuinely easy recovery days around it.',
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
     runCards:[
-      { title:'Zone 2 Easy Run', stats:['30–45 min','Zone 2','conversational'],
-        desc:'Truly easy. Protects Thursday hard run.', alts:[] },
-      { title:'Optional Mobility', stats:['~10 min'], desc:'',
-        alts:['Couch stretch — 2×60 sec each','90/90 hip switches — 2×10','Ankle rocks — 2×10 each'] },
-    ]
-  },
-  {
-    id:4, title:'Double — Quality Run + Upper B', subtitle:'Thu · AM Run / PM Pull', type:'double', pill:'Run + Up B', tag:'Double · Pull', tagType:'strength',
-    desc:'The weekly hard run in the AM, upper-pull lift in the PM, 6+ hrs apart. Pairing the hard run with an UPPER day keeps it off your legs — this is the clean double. Antagonist supersets hold the lift near 45 min.',
-    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap pull-ups — 2×8','Cat-cow — 2×8'],
-    runCards:[
-      { title:'Quality Run — AM', stats:['Pick one format','the weekly hard run'],
-        desc:'Your single quality session. Rotate formats week to week.',
+      { title:'Threshold / Quality Run — AM', stats:['Pick one format','the weekly hard run'],
+        desc:'Run this FIRST, on fresh legs. Lift after, 6+ hrs later if you can. Rotate formats weekly.',
         structuredAlts:[
           { title:'Classic Cruise Intervals', detail:'5 × 1,000m @ threshold · 60 sec rest' },
           { title:'Broken Tempo', detail:'3 × 8 min @ tempo · 2 min easy jog between' },
           { title:'Mile Repeats', detail:'4 × 1 mile @ threshold · 90 sec rest' },
           { title:'Fartlek Threshold', detail:'20 min: 3 min hard / 2 min easy · repeat × 4' },
-          { title:'Acceleration Run', detail:'5 × 2 min building Z1 to Z4 · 3 min easy between' },
           { title:'Hill Threshold', detail:'6 × 3 min uphill @ threshold · jog down' },
         ] },
+    ],
+    slots:[
+      { id:'la1', idx:'1', cat:'Plyo Primer', primary:'Box Jumps', sets:'3×3-5 · crisp',
+        alts:[{name:'Broad Jumps',sets:'3×4'},{name:'Squat Jumps',sets:'3×5'},{name:'Tuck Jumps',sets:'3×5'},{name:'Depth Jumps',sets:'3×4'},{name:'Hurdle Hops',sets:'3×5'},{name:'Pogo Hops',sets:'3×10'},{name:'Single-Leg Pogos',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Lateral Bounds',sets:'3×5 each'},{name:'Standing Long Jump',sets:'3×3'},{name:'A-Skips',sets:'3×20m'}] },
+      { id:'la2', idx:'2', cat:'Heavy Knee', primary:'Back Squat', sets:'4×3-5 · 2-3 RIR · full rest',
+        alts:[{name:'Front Squat',sets:'4×4'},{name:'Safety Bar Squat',sets:'4×5'},{name:'Hack Squat',sets:'4×6'},{name:'Leg Press',sets:'4×8'}] },
+      { id:'la3', idx:'3', cat:'Light Hinge', primary:'Barbell Hip Thrust', sets:'3×8-12 · moderate',
+        alts:[{name:'Cable Pull-Through',sets:'3×12'},{name:'Romanian Deadlift (light)',sets:'3×8'},{name:'Single-Leg Hip Thrust',sets:'3×10 each'},{name:'45° Back Extension',sets:'3×12'},{name:'Good Morning',sets:'3×10'}] },
+      { id:'lakb', idx:'4', cat:'Hinge Power', primary:'KB Swing', sets:'4×6-8 · explosive · snappy',
+        alts:[{name:'Heavy KB Swing',sets:'5×5'},{name:'Single-Arm KB Swing',sets:'4×6 each'},{name:'Med Ball Slam',sets:'4×5'},{name:'Kettlebell Clean',sets:'4×5 each'}] },
+      { id:'la4', idx:'5', cat:'Unilateral Knee', primary:'Bulgarian Split Squat', sets:'3×8 each · 2-3 RIR',
+        alts:[{name:'Reverse Lunge',sets:'3×8 each'},{name:'Loaded Step-Up',sets:'3×8 each'},{name:'Walking Lunge',sets:'3×10 each'}] },
+      { id:'la5', idx:'6', cat:'Lower Leg', ss:'SS1', primary:'Bent-Knee Calf Raise', sets:'2-3×12-15',
+        alts:[{name:'Seated Calf Raise',sets:'3×15'},{name:'Single-Leg Calf Raise',sets:'3×12 each'}] },
+      { id:'la6', idx:'7', cat:'Lower Leg', ss:'SS1', primary:'Tibialis Raise', sets:'2-3×15-20',
+        alts:[{name:'Tib-Bar Dorsiflexion',sets:'3×15'},{name:'Banded Dorsiflexion',sets:'3×20'}] },
+      { id:'la7', idx:'8', cat:'Core', ss:'SS2', primary:'Copenhagen Plank', sets:'2-3×20-30 sec each',
+        alts:[{name:'Side Plank',sets:'3×30 sec each'},{name:'Adductor Squeeze',sets:'3×20 sec'}] },
+      { id:'la8', idx:'9', cat:'Core', ss:'SS2', primary:'Ab Wheel Rollout', sets:'2-3×8-10',
+        alts:[{name:'Dead Bug',sets:'3×8 each'},{name:'Pallof Press',sets:'3×10 each'},{name:'Hanging Leg Raise',sets:'3×10'}] },
+      { id:'la9', idx:'10', cat:'Mobility', opt:true, primary:'Hip Mobility Flow', sets:'home / optional',
+        alts:[{name:'90/90 Hip Switches',sets:'2×10'},{name:'Couch Stretch',sets:'2×60 sec each'}] },
+    ]
+  },
+  {
+    id:3, title:'Easy Run or Rest', subtitle:'Wed · Recovery', type:'run', pill:'Easy / Rest', tag:'Recovery', tagType:'run',
+    desc:'Recovery between the big Tuesday and Thursday upper. Easy Z2 or full rest — read your legs. After Tuesday, leaning rest is smart.',
+    runCards:[
+      { title:'Easy Run or Rest', stats:['30–40 min','Zone 2','or full rest'], desc:'Optional shakeout, or take the day fully off. No guilt after Tuesday.', alts:[] },
+      { title:'Optional Mobility', stats:['~10 min'], desc:'', alts:['Couch stretch — 2×60 sec each','90/90 hip switches — 2×10','Foam roll — 5 min'] },
+    ]
+  },
+  {
+    id:4, title:'Upper B + Easy Run', subtitle:'Thu · Easy Z2 / Pull', type:'double', pill:'Upper + Easy', tag:'Pull · Easy Run', tagType:'strength',
+    desc:'Easy run + pull day. Antagonist supersets hold it near 45 min. Optional unilateral garnish restores single-leg to 3×/week. Easy Z2 folds in free.',
+    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap pull-ups — 2×8','Cat-cow — 2×8','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
+    runCards:[
+      { title:'Zone 2 Easy Run', stats:['30–40 min','Zone 2','conversational'],
+        desc:'Free aerobic volume on a non-leg day. Keep it fully conversational.', alts:[] },
     ],
     slots:[
       { id:'ub1', idx:'1', cat:'Vertical Pull', primary:'Weighted Pull-Up', sets:'3×5-8 · 1-3 RIR',
@@ -505,15 +513,17 @@ const DAYS_ULUL = [
         alts:[{name:'Cable Curl',sets:'3×12'},{name:'Hammer Curl',sets:'3×12'},{name:'Barbell Curl',sets:'3×10'}] },
       { id:'ub7', idx:'7', cat:'Carry', primary:'Overhead Farmer Carry', sets:'3×50 steps · ¼ BW',
         alts:[{name:'Waiter Walk',sets:'3×30m each'},{name:'Suitcase Carry',sets:'3×30m each'}] },
+      { id:'ub8', idx:'8', cat:'Runner · Unilateral', opt:true, primary:'Reverse Lunge', sets:'2-3×8-10 each · optional 3rd expo',
+        alts:[{name:'Loaded Step-Up',sets:'3×8 each'},{name:'Bulgarian Split Squat',sets:'3×8 each'},{name:'Walking Lunge',sets:'3×10 each'}] },
     ]
   },
   {
-    id:5, title:'Lower B — Hinge Heavy', subtitle:'Fri · Deadlift-Biased', type:'strength', pill:'Lower B', tag:'Deadlift-Biased', tagType:'strength',
-    desc:'Heavy hinge with a rest day right after (Sat), so it does not bleed into the long run. Nordic kept to 2 easy sets since the deadlift already hit hamstrings hard. Supersets hold it near 55 min. Mains 2–3 RIR. Pick ONE plyo from the menu.',
-    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill'],
+    id:5, title:'Lower B — Hinge (Heavy)', subtitle:'Fri · Deadlift-Biased', type:'strength', pill:'Lower · Hinge', tag:'Deadlift-Biased', tagType:'strength',
+    desc:'Heavy hinge, standalone and far from Tuesday — the deadlift lands on fresh legs with a rest day after, so it does not bleed into Sunday long. Light knee variation for the 2nd squat touch. Mains 2–3 RIR.',
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
     slots:[
       { id:'lb1', idx:'1', cat:'Plyo Primer', primary:'Broad Jumps', sets:'3×4 · crisp',
-        alts:[{name:'Box Jumps',sets:'3×3-5'},{name:'Squat Jumps',sets:'3×5'},{name:'Tuck Jumps',sets:'3×5'},{name:'Depth Jumps',sets:'3×4'},{name:'Hurdle Hops',sets:'3×5'},{name:'Pogo Hops',sets:'3×10'},{name:'Single-Leg Pogos',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Lateral Bounds',sets:'3×5 each'},{name:'Standing Long Jump',sets:'3×3'},{name:'A-Skips',sets:'3×20m'}] },
+        alts:[{name:'KB Swing',sets:'4×10'},{name:'Med Ball Slam',sets:'3×5'},{name:'Box Jumps',sets:'3×3-5'},{name:'Squat Jumps',sets:'3×5'},{name:'Tuck Jumps',sets:'3×5'},{name:'Depth Jumps',sets:'3×4'},{name:'Hurdle Hops',sets:'3×5'},{name:'Pogo Hops',sets:'3×10'},{name:'Single-Leg Pogos',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Lateral Bounds',sets:'3×5 each'},{name:'Standing Long Jump',sets:'3×3'},{name:'A-Skips',sets:'3×20m'}] },
       { id:'lb2', idx:'2', cat:'Heavy Hinge', primary:'Trap Bar Deadlift', sets:'4×3-5 · 2-3 RIR · full rest',
         alts:[{name:'Romanian Deadlift',sets:'4×5'},{name:'Conventional Deadlift',sets:'4×3'},{name:'Sumo Deadlift',sets:'4×4'}] },
       { id:'lb3', idx:'3', cat:'Light Knee', primary:'Goblet Squat', sets:'3×8-10 · moderate',
@@ -536,26 +546,16 @@ const DAYS_ULUL = [
   },
   {
     id:6, title:'Full Rest', subtitle:'Sat · Recovery', type:'rest', pill:'Rest', tag:'Recovery', tagType:'run',
-    desc:'Full rest between Friday heavy hinge and the Sunday long run. Sauna, mobility, walk, eat, sleep. This spacing is what keeps the long run off tired deadlift legs.',
+    desc:'Full rest before the Sunday long run. Sauna, mobility, walk, eat, sleep.',
     runCards:[
-      { title:'Rest & Recover', stats:['Recovery day'],
-        desc:'No training. Optional easy walk or mobility only.', alts:[] },
-      { title:'Optional Mobility (if restless)', stats:['~10 min'], desc:'',
-        alts:['Couch stretch — 2×60 sec each','Foam roll quads / calves — 5 min','Easy walk — 20–30 min'] },
+      { title:'Rest & Recover', stats:['Recovery day'], desc:'No training. Optional easy walk or mobility only.', alts:[] },
     ]
   },
   {
     id:7, title:'Long Run', subtitle:'Sun · Aerobic Anchor', type:'run', pill:'Long Run', tag:'Aerobic Anchor', tagType:'run',
-    desc:'Weekly aerobic anchor on legs rested by Saturday. Mostly easy. Fuel every ~45 min. Can swap with Saturday if needed, but Sunday gives the most separation from Friday deadlifts.',
+    desc:'Weekly aerobic anchor on rested legs. Mostly easy. Fuel every ~45 min.',
     runCards:[
-      { title:'Long Run — Mostly Easy', stats:['75–110 min','Zone 2'],
-        desc:'Steady easy effort. Form and breathing focus.', alts:[] },
-      { title:'Optional Finish (only if fresh)', stats:['final 10–15 min'],
-        desc:'Only if legs feel good — keep it light.',
-        structuredAlts:[
-          { title:'End Strides', detail:'6 × 30 sec strides · full walk recovery' },
-          { title:'Gentle Progression', detail:'last 15 min drift easy to moderate' },
-        ] },
+      { title:'Long Run — Mostly Easy', stats:['75–110 min','Zone 2'], desc:'Steady easy effort. Form and breathing focus.', alts:[] },
     ]
   },
 ];
@@ -633,6 +633,22 @@ function renderWorkout() {
   }).join('');
 }
 
+function patternOf(cat) {
+  const M = {
+    'Horizontal Push':'Horiz Push','Vertical Press':'Vert Push','Horizontal Pull':'Horiz Pull',
+    'Vertical Pull':'Vert Pull','Pull':'Pull',
+    'Heavy Squat':'Squat','Heavy Knee':'Squat','Light Knee':'Squat','Quad (secondary)':'Squat',
+    'Heavy Hinge':'Hinge','Light Hinge':'Hinge','Hinge / Glute':'Hinge','Hinge Power':'Hinge','Posterior Chain':'Hamstring',
+    'Unilateral Squat':'Single-Leg','Unilateral Knee':'Single-Leg','Unilateral Hinge':'Single-Leg','Runner · Unilateral':'Single-Leg',
+    'Plyo Primer':'Plyo','Plyo · Reactive':'Plyo','Runner · Plyo':'Plyo',
+    'Side Delt':'Delt','Rear Delt':'Delt','Triceps':'Isolation','Biceps':'Isolation',
+    'Lower Leg':'Calf','Isolation + Soleus':'Calf','Runner · Soleus':'Calf','Adductor':'Adductor',
+    'Core':'Core','Core + Adductor':'Core','Rotational Core':'Core','Frontal Core':'Core',
+    'Carry':'Carry','Mobility':'Mobility','Corrective':'Mobility'
+  };
+  return M[cat] || cat;
+}
+
 function renderBlock(slot) {
   const allEx = [slot.primary, ...slot.alts.map(a=>a.name)];
   const slotPR = Math.max(0,...allEx.map(getPR));
@@ -644,7 +660,7 @@ function renderBlock(slot) {
     <div class="block-header" onclick="toggleBlock(this)">
       <span class="block-index">${slot.idx}</span>
       <span class="block-cat">${slot.cat}</span>${slot.ss?`<span class="ss-pill">⚡${slot.ss}</span>`:''}${slot.opt?'<span class="opt-pill">home/opt</span>':''}
-      <span class="block-name"><span class="primary-pill">${slot.primary}</span><span class="primary-sets">${slot.sets}</span></span>
+      <span class="block-name"><span class="primary-pill">${slot.primary}</span><span class="pat-pill">${patternOf(slot.cat)}</span><span class="primary-sets">${slot.sets}</span></span>
       <div class="block-actions">
         <button class="log-btn" onclick="openLog(event,'${slot.id}')">+ Log</button>
         ${prHtml}
