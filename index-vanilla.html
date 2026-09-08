@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'">
+<title>Hybrid Athlete Weekly Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0d0d; --surface:#161616; --surface2:#1f1f1f; --surface3:#252525;
+    --accent:#e8ff47; --accent2:#ff6b35; --accent3:#3ddad7; --text:#f0ede6; --muted:#666;
+    --border:#2a2a2a; --border2:#333;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+
+  header { padding:48px 32px 28px; border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+  header::before { content:''; position:absolute; top:-80px; right:-80px; width:360px; height:360px; background:radial-gradient(circle,rgba(232,255,71,.06) 0%,transparent 70%); pointer-events:none; }
+  .label { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+  h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(52px,10vw,96px); line-height:.9; color:var(--text); }
+  h1 span { color:var(--accent); }
+  .subtitle { margin-top:14px; font-size:13px; color:var(--muted); font-weight:300; max-width:520px; line-height:1.65; }
+  .header-nav { display:flex; gap:8px; margin-top:22px; flex-wrap:wrap; }
+  .nav-btn { padding:8px 18px; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--text); font-family:'DM Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.1em; cursor:pointer; transition:all .2s; }
+  .nav-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .nav-btn.active { background:var(--accent); color:#0d0d0d; border-color:var(--accent); font-weight:500; }
+
+  .week-strip { display:flex; gap:4px; padding:16px 32px; border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+  .week-strip::-webkit-scrollbar { display:none; }
+  .day-pill { flex:1; min-width:84px; padding:10px 10px 8px; background:var(--surface); border:1px solid var(--border); border-radius:8px; cursor:pointer; transition:all .2s; text-align:center; }
+  .day-pill:hover { border-color:var(--accent); background:var(--surface2); }
+  .day-pill.active { background:var(--accent); border-color:var(--accent); }
+  .day-pill.active .pill-num,.day-pill.active .pill-label,.day-pill.active .pill-type { color:#0d0d0d; }
+  .pill-label { font-family:'DM Mono',monospace; font-size:8px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin-bottom:2px; }
+  .pill-num { font-family:'Bebas Neue',sans-serif; font-size:24px; color:var(--text); line-height:1; }
+  .pill-type { font-family:'DM Mono',monospace; font-size:8px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-top:3px; }
+
+  .main { display:flex; min-height:calc(100vh - 280px); }
+  .sidebar { width:256px; min-width:256px; border-right:1px solid var(--border); padding:20px 14px; display:flex; flex-direction:column; gap:6px; }
+  .sidebar-item { padding:12px 14px; border:1px solid var(--border); border-radius:8px; cursor:pointer; transition:all .2s; background:var(--surface); }
+  .sidebar-item:hover { border-color:#444; background:var(--surface2); }
+  .sidebar-item.active { border-color:var(--accent); background:rgba(232,255,71,.05); }
+  .si-day { font-family:'DM Mono',monospace; font-size:9px; color:var(--accent); text-transform:uppercase; letter-spacing:.15em; margin-bottom:3px; }
+  .si-title { font-size:12px; font-weight:500; color:var(--text); line-height:1.3; }
+  .si-tag { display:inline-block; margin-top:5px; padding:2px 8px; border-radius:20px; font-size:9px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.08em; }
+  .tag-strength { background:rgba(255,107,53,.15); color:var(--accent2); }
+  .tag-run { background:rgba(232,255,71,.1); color:var(--accent); }
+  .tag-hyrox { background:rgba(61,218,215,.13); color:var(--accent3); }
+
+  .content { flex:1; padding:28px 32px; overflow-y:auto; max-width:900px; }
+  .view { display:none; }
+  .view.active { display:block; }
+  .day-panel { display:none; }
+  .day-panel.active { display:block; }
+
+  .day-header { display:flex; align-items:flex-start; gap:16px; margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+  .day-num-big { font-family:'Bebas Neue',sans-serif; font-size:72px; color:var(--accent); line-height:1; opacity:.2; min-width:60px; }
+  .day-info { flex:1; }
+  .day-label-sm { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.15em; margin-bottom:4px; }
+  .day-title { font-family:'Bebas Neue',sans-serif; font-size:34px; letter-spacing:.02em; color:var(--text); line-height:1.1; }
+  .day-desc { font-size:13px; color:var(--muted); margin-top:6px; line-height:1.6; max-width:580px; }
+
+  .blocks { display:flex; flex-direction:column; gap:10px; }
+  .block { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; transition:border-color .2s; }
+  .block:hover { border-color:var(--border2); }
+  .block.is-primary-day { border-color:rgba(232,255,71,.22); }
+  .block.is-primary-day .block-header { background:rgba(232,255,71,.03); }
+  .block-header { display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; }
+  .block-index { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); min-width:16px; }
+  .block-cat { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.12em; white-space:nowrap; min-width:94px; }
+  .block-name { font-size:14px; font-weight:500; flex:1; color:var(--text); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .primary-pill { font-family:'DM Mono',monospace; font-size:11px; color:#0d0d0d; background:var(--accent); padding:3px 10px; border-radius:4px; white-space:nowrap; font-weight:500; }
+  .primary-sets { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent); border:1px solid rgba(232,255,71,.3); padding:3px 8px; border-radius:4px; white-space:nowrap; }
+  .block-actions { display:flex; align-items:center; gap:8px; margin-left:4px; }
+  .log-btn { padding:4px 12px; border:1px solid var(--accent); border-radius:4px; background:transparent; color:var(--accent); font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.1em; cursor:pointer; transition:all .15s; white-space:nowrap; }
+  .log-btn:hover { background:var(--accent); color:#0d0d0d; }
+  .pr-badge { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent2); background:rgba(255,107,53,.12); padding:3px 8px; border-radius:4px; white-space:nowrap; }
+  .ss-pill { font-family:'DM Mono',monospace; font-size:9px; color:#0d0d0d; background:var(--accent2); padding:2px 7px; border-radius:4px; white-space:nowrap; font-weight:600; }
+  .opt-pill { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); border:1px dashed var(--border2); padding:2px 7px; border-radius:4px; white-space:nowrap; }
+  .pat-pill { font-family:'DM Mono',monospace; font-size:9px; color:#9aa0a6; background:var(--surface3); border:1px solid var(--border2); padding:2px 7px; border-radius:4px; white-space:nowrap; text-transform:uppercase; letter-spacing:.05em; }
+  .block-toggle { font-size:14px; color:var(--muted); transition:transform .2s; margin-left:4px; }
+  .block.open .block-toggle { transform:rotate(180deg); }
+  .block-body { display:none; padding:0 16px 14px; border-top:1px solid var(--border); }
+  .block.open .block-body { display:block; }
+
+  .alts-label { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.15em; margin:12px 0 7px; }
+  .alts-list { display:flex; flex-direction:column; gap:5px; }
+  .alt-item { display:flex; align-items:center; gap:10px; padding:7px 11px; background:var(--surface2); border-radius:6px; font-size:12px; color:#bbb; }
+  .alt-dot { width:3px; height:3px; border-radius:50%; background:var(--muted); flex-shrink:0; }
+  .alt-name { flex:1; }
+  .alt-sets { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent2); opacity:.7; }
+
+  .block-history { margin-top:10px; }
+  .bh-row { display:flex; gap:8px; align-items:center; padding:5px 9px; background:var(--surface2); border-radius:5px; margin-bottom:3px; }
+  .bh-date { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); min-width:60px; }
+  .bh-ex { font-family:'DM Mono',monospace; font-size:9px; color:var(--accent); min-width:100px; max-width:130px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bh-sets { flex:1; font-size:11px; color:var(--text); }
+  .bh-pr { font-size:9px; color:var(--accent2); font-family:'DM Mono',monospace; }
+
+  .run-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:10px; }
+  .run-card-title { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--accent); letter-spacing:.05em; margin-bottom:8px; }
+  .run-details { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:11px; }
+  .run-stat { padding:4px 12px; border:1px solid var(--border); border-radius:20px; font-family:'DM Mono',monospace; font-size:11px; color:var(--text); }
+  .run-desc { font-size:13px; color:var(--muted); line-height:1.65; }
+  .run-alt-item { display:flex; flex-direction:column; gap:3px; padding:10px 13px; background:var(--surface2); border-radius:7px; margin-top:6px; border-left:2px solid transparent; transition:border-color .2s; }
+  .run-alt-item:hover { border-left-color:var(--accent); }
+  .run-alt-title { font-size:13px; font-weight:500; color:var(--text); }
+  .run-alt-detail { font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; margin-top:1px; }
+
+  .warmup-strip { background:var(--surface); border:1px dashed var(--border2); border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+  .ws-label { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.15em; margin-bottom:9px; }
+  .ws-item { display:flex; align-items:center; gap:10px; font-size:12px; color:#bbb; padding:3px 0; }
+
+  /* MODAL */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:1000; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border:1px solid #333; border-radius:14px; width:100%; max-width:460px; overflow:hidden; }
+  .modal-head { padding:20px 24px 14px; border-bottom:1px solid var(--border); }
+  .modal-sub { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent); text-transform:uppercase; letter-spacing:.15em; margin-bottom:4px; }
+  .modal-title { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:.02em; color:var(--text); }
+  .modal-body { padding:18px 24px; max-height:62vh; overflow-y:auto; }
+  .ex-selector-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent); text-transform:uppercase; letter-spacing:.15em; margin-bottom:8px; }
+  .ex-select { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; margin-bottom:16px; transition:border-color .15s; }
+  .ex-select:focus { outline:none; border-color:var(--accent); }
+  .ex-select option { background:var(--surface2); }
+  .ex-select optgroup { color:var(--muted); }
+  .input-labels { display:grid; grid-template-columns:28px 1fr 1fr 28px; gap:8px; margin-bottom:5px; }
+  .input-label { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; text-align:center; }
+  .sets-container { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+  .set-row { display:grid; grid-template-columns:28px 1fr 1fr 28px; gap:8px; align-items:center; }
+  .set-num { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); text-align:center; }
+  .set-input { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:9px 10px; color:var(--text); font-size:15px; font-family:'DM Sans',sans-serif; width:100%; text-align:center; transition:border-color .15s; }
+  .set-input:focus { outline:none; border-color:var(--accent); }
+  .set-input::placeholder { color:var(--muted); font-size:12px; }
+  .set-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; transition:color .15s; text-align:center; }
+  .set-del:hover { color:var(--accent2); }
+  .add-set-btn { background:none; border:1px dashed var(--border); border-radius:6px; color:var(--muted); font-size:12px; font-family:'DM Mono',monospace; padding:8px; cursor:pointer; width:100%; transition:all .15s; margin-bottom:14px; }
+  .add-set-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .note-input { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:10px; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; width:100%; resize:none; transition:border-color .15s; }
+  .note-input:focus { outline:none; border-color:var(--accent); }
+  .note-input::placeholder { color:var(--muted); }
+  .modal-history { margin-bottom:16px; }
+  .modal-history-empty { font-size:12px; color:var(--muted); font-style:italic; margin-bottom:14px; }
+  .mh-row { display:grid; grid-template-columns:72px 1fr auto; gap:8px; align-items:center; padding:7px 10px; border-radius:6px; background:var(--surface2); margin-bottom:4px; }
+  .mh-row.is-pr { background:rgba(255,107,53,.08); border:1px solid rgba(255,107,53,.2); }
+  .mh-date { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
+  .mh-sets { font-size:12px; color:var(--text); }
+  .mh-row.is-pr .mh-sets { color:var(--accent2); }
+  .mh-pr-tag { font-family:'DM Mono',monospace; font-size:9px; color:var(--accent2); background:rgba(255,107,53,.15); padding:2px 6px; border-radius:3px; }
+  .mh-note { font-size:11px; color:var(--muted); font-style:italic; grid-column:1/-1; margin-top:-2px; }
+  .modal-foot { display:flex; gap:10px; padding:14px 24px; border-top:1px solid var(--border); }
+  .btn-cancel { flex:1; padding:10px; border:1px solid var(--border); border-radius:8px; background:none; color:var(--muted); font-family:'DM Mono',monospace; font-size:12px; text-transform:uppercase; cursor:pointer; transition:all .15s; }
+  .btn-cancel:hover { color:var(--text); border-color:#555; }
+  .btn-save { flex:2; padding:10px; border:none; border-radius:8px; background:var(--accent); color:#0d0d0d; font-family:'DM Mono',monospace; font-size:12px; text-transform:uppercase; letter-spacing:.1em; font-weight:500; cursor:pointer; transition:opacity .15s; }
+  .btn-save:hover { opacity:.85; }
+
+  /* PROGRESS */
+  .progress-header { margin-bottom:24px; }
+  .progress-header h2 { font-family:'Bebas Neue',sans-serif; font-size:42px; color:var(--text); }
+  .progress-header p { font-size:13px; color:var(--muted); margin-top:6px; }
+  .search-bar { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text); font-size:14px; font-family:'DM Sans',sans-serif; margin-bottom:18px; transition:border-color .15s; }
+  .search-bar:focus { outline:none; border-color:var(--accent); }
+  .search-bar::placeholder { color:var(--muted); }
+
+  /* ---- paces view ---- */
+  .stamp { display:flex; flex-wrap:wrap; gap:0; border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:20px; background:var(--surface); }
+  .stamp-cell { flex:1 1 150px; padding:14px 18px; border-right:1px solid var(--border); }
+  .stamp-cell:last-child { border-right:none; }
+  .stamp-k { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+  .stamp-v { font-family:'DM Mono',monospace; font-size:15px; color:var(--accent); }
+  .stamp-v.sm { font-size:12px; color:var(--text); line-height:1.5; }
+  .pace-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:8px; background:var(--surface); margin-bottom:22px; }
+  table.pace { border-collapse:collapse; width:100%; min-width:640px; }
+  table.pace th { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); text-align:right; padding:12px 14px; border-bottom:1px solid var(--border2); white-space:nowrap; font-weight:400; }
+  table.pace th:first-child, table.pace td:first-child { text-align:left; }
+  table.pace th.tgt { color:var(--accent2); }
+  table.pace td { padding:12px 14px; border-bottom:1px solid var(--border); text-align:right; font-size:14px; white-space:nowrap; vertical-align:top; }
+  table.pace tbody tr:last-child td { border-bottom:none; }
+  table.pace tr.hilite td { background:rgba(232,255,71,.04); }
+  .z-name { font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text); font-weight:500; }
+  .z-use { display:block; font-size:11.5px; color:var(--muted); margin-top:3px; white-space:normal; max-width:30ch; font-weight:400; }
+  .p-km { font-family:'DM Mono',monospace; font-size:15px; color:var(--accent); }
+  .p-mi { display:block; font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); margin-top:2px; }
+  .p-hr { font-family:'DM Mono',monospace; font-size:12px; color:var(--text); opacity:.75; }
+  .p-tgt { font-family:'DM Mono',monospace; font-size:15px; color:var(--accent2); }
+  .note-card { border:1px solid var(--border); border-left:2px solid var(--accent2); border-radius:0 8px 8px 0; background:var(--surface); padding:16px 20px; margin-bottom:14px; }
+  .note-card h4 { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent2); margin-bottom:8px; font-weight:400; }
+  .note-card p { font-size:13.5px; color:var(--text); opacity:.85; line-height:1.6; }
+  .exercise-cards { display:flex; flex-direction:column; gap:8px; }
+  .ex-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .ex-card-head { display:flex; align-items:center; gap:14px; padding:16px 20px; cursor:pointer; }
+  .ex-card-name { flex:1; font-size:14px; font-weight:500; color:var(--text); }
+  .ex-card-pr { font-family:'DM Mono',monospace; font-size:12px; color:var(--accent); }
+  .ex-card-count { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); }
+  .ex-card-toggle { font-size:14px; color:var(--muted); transition:transform .2s; }
+  .ex-card.open .ex-card-toggle { transform:rotate(180deg); }
+  .ex-card-body { display:none; padding:0 20px 16px; border-top:1px solid var(--border); }
+  .ex-card.open .ex-card-body { display:block; }
+  .history-table { width:100%; margin-top:12px; border-collapse:collapse; }
+  .history-table th { font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); text-align:left; padding:6px 8px; border-bottom:1px solid var(--border); }
+  .history-table td { font-size:12px; color:#ccc; padding:8px; border-bottom:1px solid rgba(255,255,255,.04); vertical-align:top; }
+  .history-table tr:last-child td { border-bottom:none; }
+  .pr-row td { color:var(--accent2) !important; }
+  .del-entry { background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; padding:2px 6px; border-radius:4px; transition:color .15s; }
+  .del-entry:hover { color:var(--accent2); }
+  .group-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent); text-transform:uppercase; letter-spacing:.15em; margin:16px 0 8px; border-top:1px solid var(--border); padding-top:12px; }
+  .group-label:first-child { border-top:none; margin-top:4px; padding-top:0; }
+  .empty-state { text-align:center; padding:60px 20px; }
+  .empty-state .big { font-family:'Bebas Neue',sans-serif; font-size:48px; opacity:.12; color:var(--text); }
+  .empty-state p { font-size:13px; color:var(--muted); margin-top:8px; }
+
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--accent); color:#0d0d0d; font-family:'DM Mono',monospace; font-size:12px; padding:10px 18px; border-radius:8px; z-index:2000; opacity:0; transition:opacity .3s; pointer-events:none; font-weight:500; }
+  .toast.show { opacity:1; }
+
+  @media(max-width:768px) {
+    .sidebar { display:none; }
+    header { padding:32px 20px 20px; }
+    .week-strip { padding:12px 16px; }
+    .content { padding:20px 16px; }
+    .day-num-big { font-size:48px; }
+    .day-title { font-size:26px; }
+    .block-cat { display:none; }
+    .primary-sets { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="label">Hybrid Training · Three Programs</div>
+  <h1>Hybrid<br><span>Athlete</span></h1>
+  <p class="subtitle" id="subtitle"></p>
+  <div class="header-nav" id="program-nav">
+    <button class="nav-btn prog-btn active" onclick="switchProgram('fb',this)">3× Full Body</button>
+    <button class="nav-btn prog-btn" onclick="switchProgram('ulul',this)">4× ULUL</button>
+    <button class="nav-btn prog-btn" onclick="switchProgram('hyrox',this)">Hybrid Week</button>
+  </div>
+  <div class="header-nav">
+    <button class="nav-btn active" id="btn-workout" onclick="switchView('workout',this)">Workout Plan</button>
+    <button class="nav-btn" onclick="switchView('progress',this)">Progress</button>
+    <button class="nav-btn" onclick="switchView('paces',this)">Paces</button>
+  </div>
+</header>
+
+<div class="view active" id="view-workout">
+  <div class="week-strip" id="week-strip">
+  </div>
+  <div class="main">
+    <aside class="sidebar" id="sidebar">
+    </aside>
+    <div class="content" id="workout-content"></div>
+  </div>
+</div>
+
+<div class="view" id="view-progress">
+  <div class="content">
+    <div class="progress-header">
+      <h2>Progress <span style="color:var(--accent)">Tracker</span></h2>
+      <p>All logged sessions by slot. Orange rows are PRs. Click any card to expand.</p>
+    </div>
+    <input class="search-bar" type="text" placeholder="Search exercises…" oninput="renderProgress(this.value)">
+    <div class="exercise-cards" id="exercise-cards">
+      <div class="empty-state"><div class="big">EMPTY</div><p>No sessions logged yet.<br>Hit <strong style="color:var(--accent)">+ Log</strong> on any exercise to start.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="view" id="view-paces">
+  <div class="content">
+    <div class="progress-header">
+      <h2>Training <span style="color:var(--accent)">Paces</span></h2>
+      <p>What speed to run, by zone. Everything below is derived from real sessions, not a calculator guess.</p>
+    </div>
+
+    <div class="stamp">
+      <div class="stamp-cell">
+        <div class="stamp-k">Calibrated</div>
+        <div class="stamp-v">2 Sep 2026</div>
+      </div>
+      <div class="stamp-cell">
+        <div class="stamp-k">Fitness</div>
+        <div class="stamp-v">VDOT 44</div>
+      </div>
+      <div class="stamp-cell">
+        <div class="stamp-k">Max HR</div>
+        <div class="stamp-v">195 bpm</div>
+      </div>
+      <div class="stamp-cell" style="flex:2 1 260px">
+        <div class="stamp-k">Built from</div>
+        <div class="stamp-v sm">5×1km 9/1 — 4:28 avg @ 168 bpm<br>10K TT 7/9 — 46:59<br>SF Half 7/26 — 1:44:33 (+290m)</div>
+      </div>
+    </div>
+
+    <div class="pace-wrap">
+      <table class="pace">
+        <thead>
+          <tr>
+            <th>Zone</th>
+            <th>Pace now</th>
+            <th>Heart rate</th>
+            <th class="tgt">At sub-90 fitness</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="z-name">Easy</span><span class="z-use">3 runs/wk + all warm-ups. 75–80% of weekly volume.</span></td>
+            <td><span class="p-km">5:35–6:10</span><span class="p-mi">9:00–9:55 /mi</span></td>
+            <td><span class="p-hr">&lt; 156</span></td>
+            <td><span class="p-tgt">5:15–5:45</span><span class="p-mi">8:27–9:15 /mi</span></td>
+          </tr>
+          <tr>
+            <td><span class="z-name">Long-run steady</span><span class="z-use">The embedded block on Sunday. Marathon effort.</span></td>
+            <td><span class="p-km">4:52</span><span class="p-mi">7:50 /mi</span></td>
+            <td><span class="p-hr">160–168</span></td>
+            <td><span class="p-tgt">4:31</span><span class="p-mi">7:16 /mi</span></td>
+          </tr>
+          <tr class="hilite">
+            <td><span class="z-name">Threshold / tempo</span><span class="z-use">Wed → formats. 20–40 min continuous or 2×15 min. The main lever for sub-90.</span></td>
+            <td><span class="p-km">4:36–4:42</span><span class="p-mi">7:24–7:34 /mi</span></td>
+            <td><span class="p-hr">168–176</span></td>
+            <td><span class="p-tgt">4:19–4:23</span><span class="p-mi">6:57–7:04 /mi</span></td>
+          </tr>
+          <tr class="hilite">
+            <td><span class="z-name">Interval / VO₂max</span><span class="z-use">Wed ▲ formats. 3–5 min reps, recovery equal to the rep — never 90 sec.</span></td>
+            <td><span class="p-km">4:12–4:18</span><span class="p-mi">6:46–6:55 /mi</span></td>
+            <td><span class="p-hr">176–185</span></td>
+            <td><span class="p-tgt">3:56–4:02</span><span class="p-mi">6:20–6:29 /mi</span></td>
+          </tr>
+          <tr>
+            <td><span class="z-name">Reps / speed</span><span class="z-use">200–400m, full recovery. Economy work, not fitness.</span></td>
+            <td><span class="p-km">400m / 95s</span><span class="p-mi">3:58 /km · 6:23 /mi</span></td>
+            <td><span class="p-hr">n/a</span></td>
+            <td><span class="p-tgt">400m / 88s</span><span class="p-mi">3:40 /km · 5:54 /mi</span></td>
+          </tr>
+          <tr>
+            <td><span class="z-name">HYROX run segments</span><span class="z-use">Fri. Race effort on tired legs — deliberately not all-out.</span></td>
+            <td><span class="p-km">4:35–4:50</span><span class="p-mi">7:23–7:47 /mi</span></td>
+            <td><span class="p-hr">170–180</span></td>
+            <td><span class="p-tgt">4:20–4:35</span><span class="p-mi">6:58–7:23 /mi</span></td>
+          </tr>
+          <tr>
+            <td><span class="z-name">Half-marathon race pace</span><span class="z-use">Flat course, today vs the goal.</span></td>
+            <td><span class="p-km">4:30 → 1:35</span><span class="p-mi">7:14 /mi</span></td>
+            <td><span class="p-hr">175–182</span></td>
+            <td><span class="p-tgt">4:15 → 1:29:45</span><span class="p-mi">6:49 /mi</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note-card">
+      <h4>Recalibrate when</h4>
+      <p>These go stale. Redo them after any race, after a 10K time trial, or if a threshold session at 4:38 starts averaging more than 4 bpm below 170 — that means the pace has become too easy and the whole table should shift down.</p>
+    </div>
+    <div class="note-card">
+      <h4>Deload every third week</h4>
+      <p>Eleven sessions a week puts you squarely in the group the concurrent-training research flags as at-risk. Every third week: cut volume 40–50%, keep the intensity. Drop one easy run, halve the accessory sets, and make Friday the "pure strength-endurance" format instead of a compromised run.</p>
+    </div>
+    <div class="note-card">
+      <h4>The one rule that matters most</h4>
+      <p>Run first on every double, and leave 6+ hours before the lift. Never lift legs heavy in the 24 hours before a quality run. Everything else in this program is downstream of those two lines.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-sub" id="modal-date"></div>
+      <div class="modal-title" id="modal-slot-name"></div>
+    </div>
+    <div class="modal-body">
+      <div class="ex-selector-label">Exercise logged</div>
+      <select class="ex-select" id="modal-ex-select" onchange="onExSelectChange()"></select>
+      <div class="modal-history" id="modal-history"></div>
+      <div class="input-labels">
+        <div class="input-label"></div>
+        <div class="input-label">Weight (lbs)</div>
+        <div class="input-label">Reps</div>
+        <div class="input-label"></div>
+      </div>
+      <div class="sets-container" id="sets-container"></div>
+      <button class="add-set-btn" onclick="addSetRow()">+ Add Set</button>
+      <textarea class="note-input" id="modal-note" rows="2" placeholder="Notes (optional)"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveLog()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DAYS_FB = [
+  {
+    id:1, title:'Full Body Strength A', subtitle:'Mon · Squat Focus', type:'strength', pill:'Strength A', tag:'Squat Focus', tagType:'strength',
+    desc:'Squat anchor on fresh legs. Mains: add load weekly, stay 2–4 RIR — do not grind. Accessories 1–3 RIR · isolation to failure.',
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch (daily, incl. rest days)','Banded lateral walk','Short-foot + big-toe drill','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
+    slots:[
+      { id:'s1a', idx:'1', cat:'Plyo Primer', primary:'Box Jumps', sets:'3×3-5 · crisp',
+        alts:[{name:'Squat Jumps',sets:'3×5'},{name:'Broad Jumps',sets:'3×4'},{name:'Tuck Jumps',sets:'3×5'},{name:'Depth Drops',sets:'3×4'}] },
+      { id:'s1b', idx:'2', cat:'Heavy Squat', primary:'Back Squat', sets:'4×3-5 · 2-4 RIR',
+        alts:[{name:'Front Squat',sets:'4×4'},{name:'Safety Bar Squat',sets:'4×5'},{name:'Pause Squat',sets:'4×4'},{name:'Goblet Squat',sets:'3×8'}] },
+      { id:'s1c', idx:'3', cat:'Hinge / Glute', primary:'Barbell Hip Thrust', sets:'3×6-10 · 2-3 RIR',
+        alts:[{name:'BB Glute Bridge',sets:'3×8'},{name:'Cable Pull-Through',sets:'3×12'},{name:'B-Stance Hip Thrust',sets:'3×10 each'},{name:'Good Mornings',sets:'3×10'}] },
+      { id:'s1d', idx:'4', cat:'Horizontal Push', primary:'Bench Press', sets:'4×4-6 · 2-3 RIR',
+        alts:[{name:'DB Bench Press',sets:'4×8'},{name:'Weighted Dip',sets:'3×8'},{name:'Incline DB Press',sets:'4×8'},{name:'Cable Chest Press',sets:'3×10'}] },
+      { id:'s1e', idx:'5', cat:'Vertical Press', primary:'DB Shoulder Press', sets:'3×6-10 · 1-3 RIR',
+        alts:[{name:'Arnold Press',sets:'3×10'},{name:'Landmine Press',sets:'3×10 each'},{name:'Push Press',sets:'4×5'},{name:'Cable Press',sets:'3×12'}] },
+      { id:'s1f', idx:'6', cat:'Vertical Pull', primary:'Pull-Ups', sets:'3×5-8 · 1-3 RIR',
+        alts:[{name:'Chin-Ups',sets:'3×5-8'},{name:'Lat Pulldown',sets:'4×8'},{name:'Assisted Pull-Up',sets:'4×8'},{name:'Neutral-Grip Pull-Up',sets:'3×6'}] },
+      { id:'s1g', idx:'7', cat:'Isolation + Soleus', primary:'Bent-Knee Calf Raise', sets:'2-3×12-15 · to failure',
+        alts:[{name:'Seated Calf Raise',sets:'3×15'},{name:'Biceps Curl',sets:'3×12'},{name:'Cable Lateral Raise',sets:'3×15'},{name:'Hammer Curl',sets:'3×12'}] },
+      { id:'s1h', idx:'8', cat:'Core + Adductor', primary:'Ab Wheel Rollout', sets:'2-3×8-10',
+        alts:[{name:'Copenhagen Plank',sets:'3×20 sec each'},{name:'Dead Bug',sets:'3×8 each'},{name:'Pallof Press',sets:'3×10'},{name:'Hanging Leg Raise',sets:'3×10'}] },
+      { id:'s1i', idx:'9', cat:'Carry', primary:'Farmer Carry', sets:'3×50 steps · ½ BW',
+        alts:[{name:'Suitcase Carry',sets:'3×30m each'},{name:'Trap-Bar Carry',sets:'3×40m'},{name:'Double KB Carry',sets:'3×40m'}] },
+      { id:'s1j', idx:'10', cat:'Corrective', primary:'Face Pulls', sets:'2×12',
+        alts:[{name:'Band Pull-Aparts',sets:'3×15'},{name:'Reverse Pec-Deck',sets:'3×15'},{name:'W-Raises',sets:'3×12'}] },
+    ]
+  },
+  {
+    id:2, title:'Easy Zone 2 Run', subtitle:'Tue · Easy Run', type:'run', pill:'Easy Run', tag:'Easy Run', tagType:'run',
+    desc:'Easy aerobic only. Keep it conversational — this protects tomorrow\'s quality run and keeps your legs fresh for the week.',
+    runCards:[
+      { title:'Zone 2 Easy Run', stats:['30–45 min','Zone 2','conversational'],
+        desc:'Truly easy effort. If you cannot hold a full sentence, slow down. Base work only.',
+        alts:[] },
+      { title:'Optional Mobility', stats:['~10 min'],
+        desc:'',
+        alts:['Couch stretch — 2×60 sec each','90/90 hip switches — 2×10','Ankle rocks — 2×10 each','World\'s greatest stretch — 2×5 each'] },
+    ]
+  },
+  {
+    id:3, title:'Double — Quality Run + Strength B', subtitle:'Wed · AM Run / PM Hinge', type:'double', pill:'Run + Str B', tag:'Double · Hinge', tagType:'strength',
+    desc:'AM: the only quality run of the week. PM: Strength B, ideally 6+ hrs later. Hinge is paired with the hard run on purpose — you load a different pattern than the run just fatigued. Both sessions run slightly submaximal; that is the trade for a clean rest day tomorrow.',
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
+    runCards:[
+      { title:'Quality Run — AM', stats:['Pick one format','the weekly hard run'],
+        desc:'Your single quality session. Rotate formats week to week to keep the stimulus fresh.',
+        structuredAlts:[
+          { title:'Classic Cruise Intervals', detail:'5 × 1,000m @ threshold · 60 sec rest · controlled-hard' },
+          { title:'Broken Tempo', detail:'3 × 8 min @ tempo pace · 2 min easy jog between' },
+          { title:'Mile Repeats', detail:'4 × 1 mile @ threshold · 90 sec rest · strong but sustainable' },
+          { title:'Fartlek Threshold', detail:'20 min: 3 min hard / 2 min easy · repeat × 4' },
+          { title:'Lactate Ladder', detail:'6 · 5 · 4 · 3 min @ increasing effort · equal rest' },
+          { title:'400m Cruise Sets', detail:'10 × 400m @ 10k effort · 45 sec rest · cadence focus' },
+          { title:'Hill Threshold', detail:'6 × 3 min uphill @ threshold · jog down recovery' },
+          { title:'2-Mile Tempo Blocks', detail:'2 × 2 miles @ comfortably hard · 3 min rest between' },
+        ]
+      },
+    ],
+    slots:[
+      { id:'s3a', idx:'1', cat:'Plyo Primer', primary:'Broad Jumps', sets:'3×4 · crisp',
+        alts:[{name:'KB Swing',sets:'4×10'},{name:'Med Ball Slam',sets:'3×5'},{name:'Lateral Bounds',sets:'3×5 each'},{name:'Standing Long Jump',sets:'3×3'}] },
+      { id:'s3b', idx:'2', cat:'Heavy Hinge', primary:'Trap Bar Deadlift', sets:'4×3-5 · 2-4 RIR',
+        alts:[{name:'Conventional Deadlift',sets:'4×3'},{name:'Romanian Deadlift',sets:'4×5'},{name:'Sumo Deadlift',sets:'4×4'},{name:'Rack Pull from Knee',sets:'3×5'}] },
+      { id:'s3c', idx:'3', cat:'Quad (secondary)', primary:'Front Squat', sets:'3×6-10 · 2-3 RIR',
+        alts:[{name:'Goblet Squat',sets:'3×10'},{name:'Leg Press',sets:'3×10'},{name:'Hack Squat',sets:'4×8'},{name:'Split Squat',sets:'3×8 each'}] },
+      { id:'s3d', idx:'4', cat:'Horizontal Push', primary:'Incline DB Press', sets:'3×6-10 · 2-3 RIR',
+        alts:[{name:'Incline BB Press',sets:'4×6'},{name:'Cable Incline Press',sets:'3×12'},{name:'Weighted Push-Up',sets:'3×12'},{name:'DB Bench Press',sets:'4×8'}] },
+      { id:'s3e', idx:'5', cat:'Vertical Press', primary:'Barbell OHP', sets:'4×4-6 · 2-3 RIR',
+        alts:[{name:'Seated DB Press',sets:'3×8'},{name:'Push Press',sets:'4×4'},{name:'Arnold Press',sets:'3×10'},{name:'Landmine Press',sets:'3×10 each'}] },
+      { id:'s3f', idx:'6', cat:'Horizontal Pull', primary:'Barbell Row', sets:'3×8-12 · 1-3 RIR',
+        alts:[{name:'DB Row',sets:'4×8 each'},{name:'Cable Row',sets:'4×10'},{name:'Chest-Supported Row',sets:'3×10'},{name:'Inverted Row',sets:'3×12'}] },
+      { id:'s3g', idx:'7', cat:'Posterior Chain', primary:'Nordic Curl', sets:'2-3 sets · as able',
+        alts:[{name:'Lying Leg Curl',sets:'3×10'},{name:'Slider Ham Curl',sets:'3×10'},{name:'Good Mornings',sets:'3×10'},{name:'Single-Leg RDL',sets:'3×8 each'}] },
+      { id:'s3h', idx:'8', cat:'Rotational Core', primary:'Pallof Press Rotation', sets:'2-3×10-12 each',
+        alts:[{name:'Cable Woodchop',sets:'3×10 each'},{name:'Landmine Rotation',sets:'3×8 each'},{name:'Med Ball Rotational Throw',sets:'3×8 each'},{name:'Bird-Dog',sets:'3×10 each'}] },
+      { id:'s3i', idx:'9', cat:'Carry', primary:'Overhead Farmer Carry', sets:'3×50 steps · ¼ BW',
+        alts:[{name:'Waiter Walk',sets:'3×30m each'},{name:'Bottoms-Up KB Carry',sets:'3×30m each'},{name:'Suitcase Carry',sets:'3×30m each'}] },
+    ]
+  },
+  {
+    id:4, title:'Full Rest', subtitle:'Thu · Recovery', type:'rest', pill:'Rest', tag:'Recovery', tagType:'run',
+    desc:'Full rest — the day the Wednesday double buys back. This is where the strength adaptation actually happens. Optional light mobility only.',
+    runCards:[
+      { title:'Rest & Recover', stats:['Recovery day'],
+        desc:'No training. Walk, eat, sleep. Legs come back fresh for Friday Strength C.',
+        alts:[] },
+      { title:'Optional Mobility (if restless)', stats:['~10 min, easy'],
+        desc:'',
+        alts:['Half-kneeling hip-flexor stretch — 2×60 sec each','Couch stretch — 2×60 sec each','Foam roll quads / calves — 5 min','Easy walk — 20–30 min'] },
+    ]
+  },
+  {
+    id:5, title:'Full Body Strength C', subtitle:'Fri · Unilateral / Reactive', type:'strength', pill:'Strength C', tag:'Uni · Reactive', tagType:'strength',
+    desc:'Unilateral + reactive on fresh legs (Thursday rest sets this up). The runner day — single-leg strength, tendon stiffness, lower leg. Mains 2–3 RIR · isolation to failure.',
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
+    slots:[
+      { id:'s5a', idx:'1', cat:'Plyo · Reactive', primary:'Pogo Hops', sets:'3×10 · low vol, crisp',
+        alts:[{name:'Single-Leg Hops',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Line Hops',sets:'3×20 sec'},{name:'Box Drop-to-Stick',sets:'3×4'}] },
+      { id:'s5b', idx:'2', cat:'Unilateral Squat', primary:'Bulgarian Split Squat', sets:'3-4×5-8 each · 2-3 RIR',
+        alts:[{name:'Reverse Lunge',sets:'3×8 each'},{name:'Loaded Step-Up',sets:'3×8 each'},{name:'Walking Lunge',sets:'3×10 each'},{name:'Single-Leg Press',sets:'3×10 each'}] },
+      { id:'s5c', idx:'3', cat:'Unilateral Hinge', primary:'Single-Leg RDL', sets:'3×8-10 each · 2-3 RIR',
+        alts:[{name:'B-Stance RDL',sets:'3×10 each'},{name:'Single-Leg Hip Thrust',sets:'3×10 each'},{name:'Cable Single-Leg RDL',sets:'3×10 each'},{name:'Single-Leg Back Extension',sets:'3×12'}] },
+      { id:'s5d', idx:'4', cat:'Horizontal Push', primary:'Floor Press', sets:'3×6-10 · 1-3 RIR',
+        alts:[{name:'Weighted Push-Up',sets:'3×12'},{name:'DB Bench Press',sets:'4×8'},{name:'Cable Chest Press',sets:'3×12'}] },
+      { id:'s5e', idx:'5', cat:'Vertical Press', primary:'Landmine Press', sets:'3×8-10 each · 1-3 RIR',
+        alts:[{name:'Half-Kneeling DB Press',sets:'3×8 each'},{name:'Cable Press',sets:'3×12'},{name:'Arnold Press',sets:'3×10'}] },
+      { id:'s5f', idx:'6', cat:'Pull', primary:'Cable Row', sets:'3×8-12 · 1-3 RIR',
+        alts:[{name:'Lat Pulldown',sets:'3×10'},{name:'DB Row',sets:'4×8 each'},{name:'Pull-Ups',sets:'3×6'},{name:'Chest-Supported Row',sets:'3×10'}] },
+      { id:'s5g', idx:'7', cat:'Lower Leg', primary:'Standing Calf Raise', sets:'2-3×12-15',
+        alts:[{name:'Seated Calf Raise',sets:'3×15'},{name:'Single-Leg Calf Raise',sets:'3×12 each'},{name:'Tibialis Raise',sets:'3×20'},{name:'Tib-Bar Dorsiflexion',sets:'3×15'}] },
+      { id:'s5h', idx:'8', cat:'Frontal Core', primary:'Side Plank', sets:'2-3×30-45 sec each',
+        alts:[{name:'Copenhagen Plank',sets:'3×20 sec each'},{name:'Suitcase Hold',sets:'3×30 sec each'},{name:'Side Plank + Reach',sets:'3×10 each'}] },
+      { id:'s5i', idx:'9', cat:'Corrective', primary:'Hip Mobility Flow', sets:'as needed',
+        alts:[{name:'90/90 Hip Switches',sets:'2×10'},{name:'Couch Stretch',sets:'2×60 sec each'},{name:'World\'s Greatest Stretch',sets:'2×5 each'}] },
+    ]
+  },
+  {
+    id:6, title:'Easy Zone 2 or Rest', subtitle:'Sat · Optional', type:'run', pill:'Easy / Rest', tag:'Optional', tagType:'run',
+    desc:'Easy Z2 or rest — read your legs. Nothing hard. Circulation and aerobic base ahead of Sunday long run.',
+    runCards:[
+      { title:'Easy Z2 (or take the day off)', stats:['30–40 min','Zone 2','optional'],
+        desc:'Optional shakeout. If Friday Strength C hit hard, rest instead — no guilt.',
+        alts:[] },
+    ]
+  },
+  {
+    id:7, title:'Long Run', subtitle:'Sun · Aerobic Anchor', type:'run', pill:'Long Run', tag:'Aerobic Anchor', tagType:'run',
+    desc:'Weekly aerobic anchor — kept mostly easy while strength leads. Save negative-split and tempo finishes for when running becomes the priority again.',
+    runCards:[
+      { title:'Long Run — Mostly Easy', stats:['75–100 min','Zone 2'],
+        desc:'Steady easy effort. Fuel every ~45 min. Focus on form and breathing.',
+        alts:[] },
+      { title:'Optional Finish (only if fresh)', stats:['final 10–15 min'],
+        desc:'Only if legs feel good — keep it light. The block is about strength, not run PRs.',
+        structuredAlts:[
+          { title:'End Strides', detail:'6 × 30 sec strides · full walk recovery' },
+          { title:'Easy Pickups', detail:'final 10 min: 1 min light surge / 2 min easy' },
+          { title:'Gentle Progression', detail:'last 15 min drift from easy to moderate' },
+        ]
+      },
+    ]
+  },
+];
+
+const DAYS_ULUL = [
+  {
+    id:1, title:'Upper A + Easy Run', subtitle:'Mon · Easy Z2 / Push', type:'double', pill:'Upper + Easy', tag:'Push · Easy Run', tagType:'strength',
+    desc:'Easy run + your press day. Two heavy presses — bench (horizontal) and overhead (vertical), full rest — then supersetted accessories. Optional ⚡SS3 runner garnish (plyo + soleus) restores those to 3×/week. Easy Z2 folds in free.',
+    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap push-ups — 2×10','Light external rotation — 2×15','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
+    runCards:[
+      { title:'Zone 2 Easy Run', stats:['30–40 min','Zone 2','conversational'],
+        desc:'Free aerobic volume on a non-leg day. Keep it fully conversational.', alts:[] },
+    ],
+    slots:[
+      { id:'ua1', idx:'1', cat:'Horizontal Push', primary:'Bench Press', sets:'4×4-6 · 2-3 RIR · full rest',
+        alts:[{name:'DB Bench Press',sets:'4×8'},{name:'Incline BB Press',sets:'4×6'},{name:'Weighted Dip',sets:'3×8'}] },
+      { id:'ua2', idx:'2', cat:'Vertical Press', primary:'Barbell OHP', sets:'4×4-6 · 2-3 RIR · full rest',
+        alts:[{name:'Push Press',sets:'4×5'},{name:'Seated DB Shoulder Press',sets:'4×8'},{name:'Landmine Press',sets:'3×8 each'},{name:'Arnold Press',sets:'3×10'}] },
+      { id:'ua3', idx:'3', cat:'Horizontal Pull', ss:'SS1', primary:'Chest-Supported Row', sets:'3×8-12',
+        alts:[{name:'DB Row',sets:'4×8 each'},{name:'Cable Row',sets:'4×10'},{name:'Barbell Row',sets:'3×10'}] },
+      { id:'ua4', idx:'4', cat:'Side Delt', ss:'SS1', primary:'Cable Lateral Raise', sets:'3×12-15',
+        alts:[{name:'DB Lateral Raise',sets:'3×15'},{name:'Machine Lateral Raise',sets:'3×15'}] },
+      { id:'ua5', idx:'5', cat:'Rear Delt', ss:'SS2', primary:'Rear Delt Fly', sets:'3×12-15',
+        alts:[{name:'Reverse Pec-Deck',sets:'3×15'},{name:'Face Pulls',sets:'3×15'},{name:'Band Pull-Aparts',sets:'3×20'}] },
+      { id:'ua6', idx:'6', cat:'Triceps', ss:'SS2', primary:'Triceps Pushdown', sets:'3×10-12',
+        alts:[{name:'Overhead Triceps Ext',sets:'3×12'},{name:'Cable Kickback',sets:'2×15'}] },
+      { id:'ua7', idx:'7', cat:'Anti-Rotation Core', primary:'Pallof Press', sets:'2-3×10-12 each',
+        alts:[{name:'Cable Woodchop',sets:'3×10 each'},{name:'Bird-Dog',sets:'3×10 each'},{name:'Dead Bug',sets:'3×8 each'}] },
+      { id:'ua8', idx:'8', cat:'Runner · Plyo', ss:'SS3', opt:true, primary:'Pogo Hops', sets:'3×10 · optional 3rd expo',
+        alts:[{name:'Box Jumps',sets:'3×3-5'},{name:'Broad Jumps',sets:'3×4'},{name:'Single-Leg Pogos',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Ankle Hops',sets:'3×15'},{name:'A-Skips',sets:'3×20m'}] },
+      { id:'ua9', idx:'9', cat:'Runner · Soleus', ss:'SS3', opt:true, primary:'Bent-Knee Calf Raise', sets:'2-3×12-15 · optional 3rd expo',
+        alts:[{name:'Seated Calf Raise',sets:'3×15'},{name:'Single-Leg Calf Raise',sets:'3×12 each'}] },
+    ]
+  },
+  {
+    id:2, title:'HARD DAY — Threshold + Squat Lower', subtitle:'Tue · Threshold + Squat', type:'double', pill:'Threshold + Lower', tag:'Hard Day · Squat', tagType:'strength',
+    desc:'Your one big HARD day — threshold run (AM, fresh legs) then squat-biased lower (PM, ideally 6+ hrs later). Run FIRST protects run quality; squat emphasis avoids re-loading the hamstrings and calves the run just taxed — the heavy deadlift stays on Friday. The KB swing here is explosive hinge power, kept snappy and low-rep. This is a long, taxing day by design; the trade is genuinely easy recovery days around it.',
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
+    runCards:[
+      { title:'Threshold / Quality Run — AM', stats:['Pick one format','the weekly hard run'],
+        desc:'Run this FIRST, on fresh legs. Lift after, 6+ hrs later if you can. Rotate formats weekly.',
+        structuredAlts:[
+          { title:'Classic Cruise Intervals', detail:'5 × 1,000m @ threshold · 60 sec rest' },
+          { title:'Broken Tempo', detail:'3 × 8 min @ tempo · 2 min easy jog between' },
+          { title:'Mile Repeats', detail:'4 × 1 mile @ threshold · 90 sec rest' },
+          { title:'Fartlek Threshold', detail:'20 min: 3 min hard / 2 min easy · repeat × 4' },
+          { title:'Hill Threshold', detail:'6 × 3 min uphill @ threshold · jog down' },
+        ] },
+    ],
+    slots:[
+      { id:'la1', idx:'1', cat:'Plyo Primer', primary:'Box Jumps', sets:'3×3-5 · crisp',
+        alts:[{name:'Broad Jumps',sets:'3×4'},{name:'Squat Jumps',sets:'3×5'},{name:'Tuck Jumps',sets:'3×5'},{name:'Depth Jumps',sets:'3×4'},{name:'Hurdle Hops',sets:'3×5'},{name:'Pogo Hops',sets:'3×10'},{name:'Single-Leg Pogos',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Lateral Bounds',sets:'3×5 each'},{name:'Standing Long Jump',sets:'3×3'},{name:'A-Skips',sets:'3×20m'}] },
+      { id:'la2', idx:'2', cat:'Heavy Knee', primary:'Back Squat', sets:'4×3-5 · 2-3 RIR · full rest',
+        alts:[{name:'Front Squat',sets:'4×4'},{name:'Safety Bar Squat',sets:'4×5'},{name:'Hack Squat',sets:'4×6'},{name:'Leg Press',sets:'4×8'}] },
+      { id:'la3', idx:'3', cat:'Light Hinge', primary:'Barbell Hip Thrust', sets:'3×8-12 · moderate',
+        alts:[{name:'Cable Pull-Through',sets:'3×12'},{name:'Romanian Deadlift (light)',sets:'3×8'},{name:'Single-Leg Hip Thrust',sets:'3×10 each'},{name:'45° Back Extension',sets:'3×12'},{name:'Good Morning',sets:'3×10'}] },
+      { id:'lakb', idx:'4', cat:'Hinge Power', primary:'KB Swing', sets:'4×6-8 · explosive · snappy',
+        alts:[{name:'Heavy KB Swing',sets:'5×5'},{name:'Single-Arm KB Swing',sets:'4×6 each'},{name:'Med Ball Slam',sets:'4×5'},{name:'Kettlebell Clean',sets:'4×5 each'}] },
+      { id:'la4', idx:'5', cat:'Unilateral Knee', primary:'Bulgarian Split Squat', sets:'3×8 each · 2-3 RIR',
+        alts:[{name:'Reverse Lunge',sets:'3×8 each'},{name:'Loaded Step-Up',sets:'3×8 each'},{name:'Walking Lunge',sets:'3×10 each'}] },
+      { id:'la5', idx:'6', cat:'Lower Leg', ss:'SS1', primary:'Bent-Knee Calf Raise', sets:'2-3×12-15',
+        alts:[{name:'Seated Calf Raise',sets:'3×15'},{name:'Single-Leg Calf Raise',sets:'3×12 each'}] },
+      { id:'la6', idx:'7', cat:'Lower Leg', ss:'SS1', primary:'Tibialis Raise', sets:'2-3×15-20',
+        alts:[{name:'Tib-Bar Dorsiflexion',sets:'3×15'},{name:'Banded Dorsiflexion',sets:'3×20'}] },
+      { id:'la7', idx:'8', cat:'Core', ss:'SS2', primary:'Copenhagen Plank', sets:'2-3×20-30 sec each',
+        alts:[{name:'Side Plank',sets:'3×30 sec each'},{name:'Adductor Squeeze',sets:'3×20 sec'}] },
+      { id:'la8', idx:'9', cat:'Core', ss:'SS2', primary:'Ab Wheel Rollout', sets:'2-3×8-10',
+        alts:[{name:'Dead Bug',sets:'3×8 each'},{name:'Pallof Press',sets:'3×10 each'},{name:'Hanging Leg Raise',sets:'3×10'}] },
+      { id:'la9', idx:'10', cat:'Mobility', opt:true, primary:'Hip Mobility Flow', sets:'home / optional',
+        alts:[{name:'90/90 Hip Switches',sets:'2×10'},{name:'Couch Stretch',sets:'2×60 sec each'}] },
+    ]
+  },
+  {
+    id:3, title:'Easy Run or Rest', subtitle:'Wed · Recovery', type:'run', pill:'Easy / Rest', tag:'Recovery', tagType:'run',
+    desc:'Recovery between the big Tuesday and Thursday upper. Easy Z2 or full rest — read your legs. After Tuesday, leaning rest is smart.',
+    runCards:[
+      { title:'Easy Run or Rest', stats:['30–40 min','Zone 2','or full rest'], desc:'Optional shakeout, or take the day fully off. No guilt after Tuesday.', alts:[] },
+      { title:'Optional Mobility', stats:['~10 min'], desc:'', alts:['Couch stretch — 2×60 sec each','90/90 hip switches — 2×10','Foam roll — 5 min'] },
+    ]
+  },
+  {
+    id:4, title:'Upper B + Easy Run', subtitle:'Thu · Easy Z2 / Pull', type:'double', pill:'Upper + Easy', tag:'Pull · Easy Run', tagType:'strength',
+    desc:'Easy run + pull day. Antagonist supersets hold it near 45 min. Optional unilateral garnish restores single-leg to 3×/week. Easy Z2 folds in free.',
+    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap pull-ups — 2×8','Cat-cow — 2×8','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
+    runCards:[
+      { title:'Zone 2 Easy Run', stats:['30–40 min','Zone 2','conversational'],
+        desc:'Free aerobic volume on a non-leg day. Keep it fully conversational.', alts:[] },
+    ],
+    slots:[
+      { id:'ub1', idx:'1', cat:'Vertical Pull', primary:'Weighted Pull-Up', sets:'3×5-8 · 1-3 RIR',
+        alts:[{name:'Chin-Ups',sets:'3×5-8'},{name:'Lat Pulldown',sets:'4×8'},{name:'Neutral-Grip Pull-Up',sets:'3×6'}] },
+      { id:'ub2', idx:'2', cat:'Horizontal Pull', ss:'SS1', primary:'Barbell Row', sets:'3×8-12',
+        alts:[{name:'DB Row',sets:'4×8 each'},{name:'Cable Row',sets:'4×10'},{name:'Chest-Supported Row',sets:'3×10'}] },
+      { id:'ub3', idx:'3', cat:'Horizontal Push', ss:'SS1', primary:'Incline DB Press', sets:'3×8-12',
+        alts:[{name:'Incline BB Press',sets:'3×8'},{name:'Weighted Push-Up',sets:'3×12'},{name:'DB Bench Press',sets:'3×10'}] },
+      { id:'ub4', idx:'4', cat:'Side Delt', ss:'SS2', primary:'Cable Lateral Raise', sets:'3×12-15',
+        alts:[{name:'DB Lateral Raise',sets:'3×15'},{name:'Machine Lateral Raise',sets:'3×15'}] },
+      { id:'ub5', idx:'5', cat:'Rear Delt', ss:'SS2', primary:'Face Pulls', sets:'3×12-15',
+        alts:[{name:'Reverse Pec-Deck',sets:'3×15'},{name:'Band Pull-Aparts',sets:'3×20'}] },
+      { id:'ub6', idx:'6', cat:'Biceps', ss:'SS2', primary:'Incline DB Curl', sets:'3×10-12',
+        alts:[{name:'Cable Curl',sets:'3×12'},{name:'Hammer Curl',sets:'3×12'},{name:'Barbell Curl',sets:'3×10'}] },
+      { id:'ub7', idx:'7', cat:'Grip + Core', primary:'Dead Hang', sets:'3× max hold',
+        alts:[{name:'Plate Pinch',sets:'3×30 sec'},{name:'Hanging Leg Raise',sets:'3×10'},{name:'Side Plank',sets:'3×30 sec each'}] },
+      { id:'ub8', idx:'8', cat:'Runner · Unilateral', opt:true, primary:'Reverse Lunge', sets:'2-3×8-10 each · optional 3rd expo',
+        alts:[{name:'Loaded Step-Up',sets:'3×8 each'},{name:'Bulgarian Split Squat',sets:'3×8 each'},{name:'Walking Lunge',sets:'3×10 each'}] },
+    ]
+  },
+  {
+    id:5, title:'Lower B — Hinge (Heavy)', subtitle:'Fri · Deadlift-Biased', type:'strength', pill:'Lower · Hinge', tag:'Deadlift-Biased', tagType:'strength',
+    desc:'Heavy hinge, standalone and far from Tuesday — the deadlift lands on fresh legs with a rest day after, so it does not bleed into Sunday long. Light knee variation for the 2nd squat touch. Mains 2–3 RIR.',
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Short-foot + big-toe drill','Reactive primer — jump rope / low pogos / A-skips · ~1 min, low + springy'],
+    slots:[
+      { id:'lb1', idx:'1', cat:'Plyo Primer', primary:'Broad Jumps', sets:'3×4 · crisp',
+        alts:[{name:'KB Swing',sets:'4×10'},{name:'Med Ball Slam',sets:'3×5'},{name:'Box Jumps',sets:'3×3-5'},{name:'Squat Jumps',sets:'3×5'},{name:'Tuck Jumps',sets:'3×5'},{name:'Depth Jumps',sets:'3×4'},{name:'Hurdle Hops',sets:'3×5'},{name:'Pogo Hops',sets:'3×10'},{name:'Single-Leg Pogos',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Lateral Bounds',sets:'3×5 each'},{name:'Standing Long Jump',sets:'3×3'},{name:'A-Skips',sets:'3×20m'}] },
+      { id:'lb2', idx:'2', cat:'Heavy Hinge', primary:'Trap Bar Deadlift', sets:'4×3-5 · 2-3 RIR · full rest',
+        alts:[{name:'Romanian Deadlift',sets:'4×5'},{name:'Conventional Deadlift',sets:'4×3'},{name:'Sumo Deadlift',sets:'4×4'}] },
+      { id:'lb3', idx:'3', cat:'Light Knee', primary:'Goblet Squat', sets:'3×8-10 · moderate',
+        alts:[{name:'Front Squat',sets:'3×8'},{name:'Leg Press',sets:'3×10'},{name:'Heel-Elevated Goblet',sets:'3×10'}] },
+      { id:'lb4', idx:'4', cat:'Unilateral Hinge', primary:'Single-Leg RDL', sets:'3×8-10 each',
+        alts:[{name:'B-Stance RDL',sets:'3×10 each'},{name:'Single-Leg Hip Thrust',sets:'3×10 each'}] },
+      { id:'lb5', idx:'5', cat:'Posterior Chain', ss:'SS1', primary:'Nordic Curl', sets:'2 sets · not to failure',
+        alts:[{name:'Lying Leg Curl',sets:'3×10'},{name:'Slider Ham Curl',sets:'3×10'}] },
+      { id:'lb6', idx:'6', cat:'Core', ss:'SS1', primary:'Pallof Press', sets:'2-3×10-12 each',
+        alts:[{name:'Cable Woodchop',sets:'3×10 each'},{name:'Bird-Dog',sets:'3×10 each'}] },
+      { id:'lb7', idx:'7', cat:'Adductor', ss:'SS1', primary:'Copenhagen Plank', sets:'2-3×20-30 sec each',
+        alts:[{name:'Adductor Machine',sets:'3×12'},{name:'Cable Hip Adduction',sets:'3×12 each'},{name:'Side-Lying Adduction',sets:'3×15 each'}] },
+      { id:'lb8', idx:'8', cat:'Lower Leg', ss:'SS2', primary:'Standing Calf Raise', sets:'2-3×12-15',
+        alts:[{name:'Seated Calf Raise',sets:'3×15'},{name:'Single-Leg Calf Raise',sets:'3×12 each'}] },
+      { id:'lb9', idx:'9', cat:'Lower Leg', ss:'SS2', primary:'Tibialis Raise', sets:'2-3×15-20',
+        alts:[{name:'Tib-Bar Dorsiflexion',sets:'3×15'}] },
+      { id:'lb10', idx:'10', cat:'Mobility', opt:true, primary:'Hip Mobility Flow', sets:'home / optional',
+        alts:[{name:'90/90 Hip Switches',sets:'2×10'},{name:'Couch Stretch',sets:'2×60 sec each'}] },
+    ]
+  },
+  {
+    id:6, title:'Full Rest', subtitle:'Sat · Recovery', type:'rest', pill:'Rest', tag:'Recovery', tagType:'run',
+    desc:'Full rest before the Sunday long run. Sauna, mobility, walk, eat, sleep.',
+    runCards:[
+      { title:'Rest & Recover', stats:['Recovery day'], desc:'No training. Optional easy walk or mobility only.', alts:[] },
+    ]
+  },
+  {
+    id:7, title:'Long Run', subtitle:'Sun · Aerobic Anchor', type:'run', pill:'Long Run', tag:'Aerobic Anchor', tagType:'run',
+    desc:'Weekly aerobic anchor on rested legs. Mostly easy. Fuel every ~45 min.',
+    runCards:[
+      { title:'Long Run — Mostly Easy', stats:['75–110 min','Zone 2'], desc:'Steady easy effort. Form and breathing focus.', alts:[] },
+    ]
+  },
+];
+
+const DAYS_HYROX = [
+  {
+    id:1, title:'Upper A — Push (Strength) + Easy Run', subtitle:'Mon · Easy Z2 / Heavy Push', type:'double', pill:'Up A + Run', tag:'Push · Strength', tagType:'strength',
+    desc:'Opens the week upper-only — Sunday\'s long run is still in your legs and Tuesday is the big day, so nothing here touches them. This is the STRENGTH upper day: bench in the 4–6 range at full rest, everything after it paired. Wednesday is the hypertrophy upper day in the 8–15 range, so the two days differ by intent, not just exercise. Full menu is ~58 min. Chest now gets two movements a day (bench + cable fly here, incline press + dip Wednesday), which takes weekly chest volume from 2 exercises to 4 and onto the standard. Barbell row drops to 3 sets to pay for it — weekly back volume is unchanged at four exercises, three of them Wednesday. Running short? The cable lateral raise is the first thing to drop — it is the one movement here that is purely aesthetic, with no running or HYROX transfer. Barbell OHP and barbell row are the heavy accessories; if the AC joint flares, landmine press and chest-supported row are the first alternates on each. Face pulls are non-negotiable. Core runs on a rotation across the week rather than piling up on one day — anti-rotation here (Pallof), anti-lateral on Tuesday (the loaded carry is real core work, not just grip), anti-extension Wednesday (hanging leg raise), and both anti-extension and anti-lateral Thursday. One quality per day, always inside a superset, never a standalone tail.',
+    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap push-ups — 2×10','Light external rotation — 2×15','Med ball chest pass — 2×5 · explosive (upper plyo primer)'],
+    runCards:[
+      { title:'Zone 2 Easy Run — AM', stats:['40–50 min','5:35–6:10 /km','under 156 bpm','+ strides'],
+        desc:'Flushing run off the Sunday long run, and free mileage because the lift is upper-only. Fully conversational — if you cannot hold a sentence, slow down. Finish with strides: five minutes, and they sharpen turnover plus add a reactive dose on a day your legs are otherwise free.',
+        alts:['Finish: 4–6 × 20 sec strides — build to ~5k effort, full walk recovery','Skip strides if the legs are still flat from Sunday'] },
+    ],
+    slots:[
+      { id:'hua2', idx:'1', cat:'Chest · HEAVY', primary:'Bench Press', sets:'4×4-6 · 2-3 RIR · full rest',
+        alts:[{name:'Neutral-Grip DB Press',sets:'4×8'},{name:'Slight-Incline DB Press',sets:'4×8'},{name:'Weighted Dip',sets:'3×8'},{name:'Incline BB Press',sets:'4×6'}] },
+      { id:'hua3', idx:'2', cat:'Vertical Press', ss:'SS1', primary:'Barbell Overhead Press', sets:'3×6-8 · standing · strict',
+        alts:[{name:'Landmine Press',sets:'3×8-10 each'},{name:'DB Shoulder Press',sets:'3×8'},{name:'Push Press',sets:'4×5'},{name:'Seated BB OHP',sets:'3×8'}] },
+      { id:'hua4', idx:'3', cat:'Back · Horizontal Pull', ss:'SS1', primary:'Barbell Row', sets:'3×6-8 · bent-over',
+        alts:[{name:'Chest-Supported Row',sets:'3×8-12'},{name:'Pendlay Row',sets:'4×6'},{name:'DB Row',sets:'4×8 each'},{name:'Cable Row',sets:'4×10'}] },
+      { id:'huafly', idx:'4', cat:'Chest · 2nd Movement · NEW', ss:'SS2', primary:'Cable Fly', sets:'3×10-12 · stretch under load',
+        alts:[{name:'Pec Deck',sets:'3×12'},{name:'Weighted Dip',sets:'3×8-10'},{name:'Low-to-High Cable Fly',sets:'3×12'},{name:'DB Fly',sets:'3×12'}] },
+      { id:'hua7', idx:'5', cat:'Triceps', ss:'SS2', primary:'Triceps Pushdown', sets:'3×10-12',
+        alts:[{name:'Overhead Triceps Ext',sets:'3×12'},{name:'Skull Crushers',sets:'3×8-10'},{name:'Cable Kickback',sets:'2×15'}] },
+      { id:'hua5', idx:'6', cat:'Side Delt · Aesthetics', ss:'SS2', opt:true, primary:'Cable Lateral Raise', sets:'3×12-15',
+        alts:[{name:'DB Lateral Raise',sets:'3×15'},{name:'Machine Lateral Raise',sets:'3×15'},{name:'Leaning Cable Raise',sets:'3×12 each'}] },
+      { id:'hua6', idx:'7', cat:'Rear Delt / Scap', ss:'SS3', primary:'Face Pulls', sets:'3×12-15 · slow · non-negotiable',
+        alts:[{name:'Rear Delt Fly',sets:'3×15'},{name:'Reverse Pec-Deck',sets:'3×15'},{name:'Band Pull-Aparts',sets:'3×20'},{name:'Prone Y-Raise',sets:'3×12'}] },
+      { id:'hua9', idx:'8', cat:'Biceps', ss:'SS3', primary:'Hammer Curl', sets:'3×10-12',
+        alts:[{name:'Cross-Body Hammer Curl',sets:'3×12 each'},{name:'Rope Cable Curl',sets:'3×12'},{name:'Barbell Curl',sets:'3×8-10'},{name:'Pull-Ups',sets:'3×8-10 · if you want the lat volume'}] },
+      { id:'hua8', idx:'9', cat:'Core · Anti-Rotation', ss:'SS3', primary:'Pallof Press', sets:'2×10-12 each',
+        alts:[{name:'Cable Woodchop',sets:'3×10 each'},{name:'Bird-Dog',sets:'3×10 each'},{name:'Dead Bug',sets:'3×8 each'}] },
+    ]
+  },
+  {
+    id:2, title:'HARD DAY — Speed Run + Lower A (Hinge)', subtitle:'Tue · AM Quality / PM Deadlift', type:'double', pill:'Speed + Low A', tag:'Hard Day · Hinge', tagType:'strength',
+    desc:'The week\'s one hard run and the only day both stimuli are hard on purpose — hard days hard. Run FIRST, always: the half is the priority and a pre-fatigued interval session is the worst pairing in the research. Lift 6+ hrs later. The heavy hinge lives here rather than Thursday so Friday gets 72 hrs of separation — a deadlift wrecks grip, erectors and glutes, which is exactly sled pull and farmers carry. TIME BUDGET: the seven core slots run about 56 min. The three marked optional — KB swing, hip thrust, light knee — add roughly 20 more, so take them when the clock allows and drop them when it does not. If hamstrings feel tight from the intervals, the KB swing is the first out: it is the only ballistic hinge in the week and it stacks on the same tissue the speed session just loaded.',
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Pogo hops — 2×15 · low, ankle only (submax stiffness primer)'],
+    runCards:[
+      { title:'Quality Run — AM', stats:['Pick one format','alternate VO₂ / threshold weeks'],
+        desc:'Alternate blocks: a VO₂ format one week, a threshold format the next. Do not run every session at 4:28 — that is the middle ground that trains neither end. Reference: VO₂ 4:12–4:18 /km at 176–185 bpm · threshold 4:36–4:42 /km at 168–176 bpm. Full table under Paces.',
+        structuredAlts:[
+          { title:'▲ Norwegian 4×4', detail:'4 × 4 min @ 176–185 bpm (90–95% max) · 3 min jog · the reference VO₂ session' },
+          { title:'▲ VO₂ Kilometres', detail:'5–6 × 1000m @ 4:12–4:16 · 2:30–3:00 jog · the recovery is the point' },
+          { title:'▲ 30/30s', detail:'2 × 10 × (30 sec @ ~3:55 /km · 30 sec jog) · 4 min between sets' },
+          { title:'▲ Hill VO₂', detail:'6 × 3 min uphill @ 90%+ max HR · jog down recovery' },
+          { title:'→ Long Threshold', detail:'2 × 15 min @ 4:38–4:42 · 3 min jog · build toward 3 × 12 min' },
+          { title:'→ Continuous Tempo', detail:'8 km @ 4:38–4:42 · unbroken · the sub-90 lever' },
+          { title:'→ Cruise Kilometres', detail:'6 × 1000m @ 4:30–4:35 · 60–90 sec float' },
+          { title:'→ Mile Repeats', detail:'4 × 1 mile @ 4:30–4:35 · 90 sec rest' },
+          { title:'→ Race-Pace Cutdown', detail:'5 km @ 4:45 → 4:35 → 4:25 · continuous, 1 km per step' },
+        ] },
+    ],
+    slots:[
+      { id:'hla2', idx:'1', cat:'Heavy Hinge · BILATERAL', primary:'Trap Bar Deadlift', sets:'4×3-5 · 2-3 RIR · full rest',
+        alts:[{name:'Conventional Deadlift',sets:'4×3'},{name:'Sumo Deadlift',sets:'4×4'},{name:'Barbell RDL',sets:'4×6-8'},{name:'Rack Pull from Knee',sets:'3×5'}] },
+      { id:'hlkb', idx:'2', cat:'Hinge Power · NEW', opt:true, primary:'KB Swing', sets:'4×6-8 · explosive · snappy · optional',
+        alts:[{name:'Heavy KB Swing',sets:'5×5'},{name:'Single-Arm KB Swing',sets:'4×6 each'},{name:'Med Ball Slam',sets:'4×5'},{name:'KB Clean',sets:'4×5 each'},{name:'Broad Jumps',sets:'3×4'}] },
+      { id:'hlc1', idx:'3', cat:'Unilateral Knee', ss:'SS1', primary:'Loaded Step-Up', sets:'3×8-10 each · 2 RIR',
+        alts:[{name:'Reverse Lunge',sets:'3×8 each'},{name:'Walking Lunge',sets:'3×10 each'},{name:'Lateral Step-Up',sets:'3×10 each'},{name:'Split Squat',sets:'3×8 each'}] },
+      { id:'hla3', idx:'4', cat:'Unilateral Hinge', ss:'SS1', primary:'Single-Leg RDL', sets:'3×8-10 each · 2 RIR',
+        alts:[{name:'B-Stance RDL',sets:'3×10 each'},{name:'Single-Leg Hip Thrust',sets:'3×10 each'},{name:'Cable Pull-Through',sets:'3×12'}] },
+      { id:'hllk', idx:'5', cat:'Light Knee · NEW', ss:'SS2', opt:true, primary:'Goblet Squat', sets:'3×8-10 · moderate · optional 2nd squat touch',
+        alts:[{name:'Front Squat',sets:'3×6-8 · lighter than Thu'},{name:'Heel-Elevated Goblet',sets:'3×10'},{name:'Zercher Squat',sets:'3×8'},{name:'Landmine Squat',sets:'3×10'}] },
+      { id:'hlb3', idx:'6', cat:'Hinge / Glute', ss:'SS2', opt:true, primary:'Barbell Hip Thrust', sets:'3×8-10 · moderate · optional',
+        alts:[{name:'Single-Leg Hip Thrust',sets:'3×10 each · unilateral version'},{name:'Cable Pull-Through',sets:'3×12'},{name:'45° Back Extension',sets:'3×12'},{name:'Barbell Glute Bridge',sets:'3×10'}] },
+      { id:'hla5', idx:'7', cat:'Glute Med', ss:'SS3', primary:'Cable Hip Abduction', sets:'3×12-15 each',
+        alts:[{name:'Banded Side-Step',sets:'3×20 each'},{name:'Side-Lying Abduction',sets:'3×15 each'},{name:'Standing Band Abduction',sets:'3×15 each'},{name:'Banded Clamshell',sets:'3×20 each'}] },
+      { id:'hlb7', idx:'8', cat:'Lower Leg · Gastroc', ss:'SS3', primary:'Standing Calf Raise', sets:'3×10-12',
+        alts:[{name:'Single-Leg DB Calf Raise',sets:'3×12 each'},{name:'Barbell Calf Raise off Step',sets:'3×15'},{name:'Smith Calf Raise',sets:'3×15'}] },
+      { id:'hlb8', idx:'9', cat:'Lower Leg · Tib', ss:'SS3', primary:'Tibialis Raise', sets:'2-3×15-20',
+        alts:[{name:'Tib-Bar Dorsiflexion',sets:'3×15'},{name:'Banded Dorsiflexion',sets:'3×20'},{name:'Wall Tib Raise',sets:'3×20'}] },
+      { id:'hlcar', idx:'10', cat:'Carry · Core Anti-Lateral', primary:'Farmers Carry', sets:'3×50m · heavy · grip already fatigued',
+        alts:[{name:'Suitcase Carry',sets:'3×40m each'},{name:'Trap-Bar Carry',sets:'3×50m'},{name:'Double KB Front Rack Carry',sets:'3×40m'},{name:'Plate Pinch Carry',sets:'3×30m'}] },
+      { id:'hlb9', idx:'11', cat:'Mobility', opt:true, primary:'Hip Mobility Flow', sets:'home / optional',
+        alts:[{name:'90/90 Hip Switches',sets:'2×10'},{name:'Couch Stretch',sets:'2×60 sec each'}] },
+    ]
+  },
+  {
+    id:3, title:'Upper B — Pull (Hypertrophy) + Easy Run', subtitle:'Wed · Easy Z2 / Volume Pull', type:'double', pill:'Up B + Run', tag:'Pull · Hypertrophy', tagType:'strength',
+    desc:'Upper-only again, sitting here to give your legs a clear day between Tuesday\'s deadlift and Thursday\'s squat. This is the HYPERTROPHY upper day — everything in the 8–15 range, shorter rests, chasing volume rather than load. Core is about 51 min, so this is the roomiest lifting day of the week. SS4 is an optional ~5 min runner garnish: low-amplitude plyo on a day your legs are free, taking reactive work from one logged dose a week to two without touching Thursday. It is the first thing to drop in a heavy week.',
+    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap pull-ups — 2×8','Cat-cow — 2×8','Med ball slam — 2×6 · explosive (upper plyo primer)'],
+    runCards:[
+      { title:'Zone 2 Easy Run — AM', stats:['40–50 min','5:35–6:10 /km','under 156 bpm','+ strides'],
+        desc:'Free aerobic volume on a no-legs day — the cheapest mileage in the week. Keep it fully conversational so Thursday is clean. Second strides day of the week.',
+        alts:['Finish: 4–6 × 20 sec strides — build to ~5k effort, full walk recovery'] },
+    ],
+    slots:[
+      { id:'hub2', idx:'1', cat:'Back · Vertical Pull', primary:'Weighted Pull-Up', sets:'3×8-10 · 1-2 RIR',
+        alts:[{name:'Chin-Ups',sets:'3×8-10'},{name:'Lat Pulldown',sets:'4×10-12'},{name:'Neutral-Grip Pull-Up',sets:'3×8'}] },
+      { id:'hub3', idx:'2', cat:'Back · Horizontal Pull', ss:'SS1', primary:'Cable Row', sets:'4×10-12',
+        alts:[{name:'Barbell Row',sets:'3×10-12'},{name:'DB Row',sets:'4×10 each'},{name:'Chest-Supported Row',sets:'3×12'}] },
+      { id:'hub4', idx:'3', cat:'Chest · Incline Press', ss:'SS1', primary:'Incline DB Press', sets:'4×8-12',
+        alts:[{name:'Neutral-Grip DB Press',sets:'3×10'},{name:'Weighted Push-Up',sets:'3×12'},{name:'Incline BB Press',sets:'3×10'}] },
+      { id:'hubdip', idx:'4', cat:'Chest · 2nd Movement · NEW', ss:'SS2', primary:'Weighted Dip', sets:'3×8-12 · lean forward · chest + triceps',
+        alts:[{name:'Cable Fly',sets:'3×12'},{name:'Flat DB Press',sets:'3×10-12'},{name:'Machine Chest Press',sets:'3×12'},{name:'Deficit Push-Up',sets:'3×15'}] },
+      { id:'hub9', idx:'5', cat:'Vertical Press · Volume', ss:'SS2', primary:'DB Shoulder Press', sets:'3×10-12',
+        alts:[{name:'Arnold Press',sets:'3×12'},{name:'Landmine Press',sets:'3×10 each'},{name:'Seated DB Press',sets:'3×12'}] },
+      { id:'hub5', idx:'6', cat:'Second Vertical Pull · SkiErg', ss:'SS2', primary:'Straight-Arm Pulldown', sets:'3×12-15',
+        alts:[{name:'Lat Pulldown (wide)',sets:'3×12'},{name:'Cable Pullover',sets:'3×15'},{name:'Kneeling Lat Pulldown',sets:'3×12'}] },
+      { id:'hub6', idx:'7', cat:'Rear Delt / Scap', ss:'SS3', primary:'Rear Delt Fly', sets:'3×12-15',
+        alts:[{name:'Reverse Pec-Deck',sets:'3×15'},{name:'Face Pulls',sets:'3×15'},{name:'Band Pull-Aparts',sets:'3×20'},{name:'Prone Y-Raise',sets:'3×12'}] },
+      { id:'hub7', idx:'8', cat:'Biceps', ss:'SS3', primary:'Incline DB Curl', sets:'3×10-12',
+        alts:[{name:'Cable Curl',sets:'3×12'},{name:'Preacher Curl',sets:'3×12'},{name:'Barbell Curl',sets:'3×10'}] },
+      { id:'hubp1', idx:'9', cat:'Runner · Plyo', ss:'SS4', opt:true, primary:'Pogo Hops', sets:'3×15 · low · optional 2nd expo',
+        alts:[{name:'Ankle Hops',sets:'3×20'},{name:'Single-Leg Pogos',sets:'3×8 each'},{name:'Jump Rope',sets:'3×45 sec'},{name:'A-Skips',sets:'3×20m'}] },
+      { id:'hubp2', idx:'10', cat:'Runner · Plyo', ss:'SS4', opt:true, primary:'Skater Bounds', sets:'3×6 each · optional 2nd expo',
+        alts:[{name:'Lateral Bounds',sets:'3×5 each'},{name:'Broad Jumps',sets:'3×4'},{name:'Bounding',sets:'3×20m'},{name:'Hurdle Hops',sets:'3×5'}] },
+      { id:'hub8', idx:'11', cat:'Core · Anti-Extension + Grip', primary:'Hanging Leg Raise', sets:'3×10-12 · slow · no swing',
+        alts:[{name:'Dead Hang',sets:'3× max hold · grip only'},{name:'Hanging Knee Raise',sets:'3×12'},{name:'Toes-to-Bar',sets:'3×8'},{name:'Plate Pinch',sets:'3×30 sec'}] },
+    ]
+  },
+  {
+    id:4, title:'Lower B — Squat (Moderate) + Easy Run', subtitle:'Thu · Easy Z2 / Squat', type:'double', pill:'Low B + Run', tag:'Double · Knee', tagType:'strength',
+    desc:'The knee-dominant day, and deliberately the moderate one — it sits 24 hrs before HYROX, so it runs at 3 RIR and never grinds. A squat is the cheaper thing to have in your legs on Friday than a deadlift: it costs some quad on sled push and wall balls but leaves grip and erectors alone, which is what sled pull and farmers carry need. This is the week\'s ONLY max-intent plyo slot — Tuesday\'s intervals covered the fast stuff, so box jumps get the freshest lifting legs here. TIME BUDGET: the seven core slots run about 57 min. SS2 is an entirely optional block — deficit reverse lunge to knee drive, KB side lunge, KB knee raise — adding roughly 18 more; skip the whole group when the clock is tight and the day collapses cleanly back to core. That block is where the frontal plane and the hip flexor live: everything else in the week is sagittal, and a loaded lateral lunge is the only frontal-plane strength movement you have. Nordics stay at 2 sets, never to failure, so Friday is not compromised.',
+    warmup:['3D lunge — 2×7 / direction','Knee-to-wall ankle rocks','Half-kneeling hip-flexor stretch','Banded lateral walk','Ankling — 2×20m','A-skips / high-knee march — 2×20m'],
+    runCards:[
+      { title:'Zone 2 Easy Run — AM', stats:['35–45 min','5:35–6:10 /km','under 156 bpm'],
+        desc:'Genuinely easy — this run exists for aerobic volume and nothing else. No strides today: Friday needs the legs. If the week has caught up with you, this is the run to shorten, never Tuesday or Sunday.', alts:[] },
+    ],
+    slots:[
+      { id:'hla1', idx:'1', cat:'Plyo Primer · MAX', primary:'Box Jumps', sets:'3×3-5 · full intent · fresh only',
+        alts:[{name:'Broad Jumps',sets:'3×4'},{name:'Depth Jumps',sets:'3×4'},{name:'KB Swing',sets:'4×6-8 · explosive'},{name:'Squat Jumps',sets:'3×5'},{name:'Hurdle Hops',sets:'3×5'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Lateral Bounds',sets:'3×5 each'},{name:'Standing Long Jump',sets:'3×3'},{name:'Single-Leg Box Jump',sets:'3×4 each'}] },
+      { id:'hlb2', idx:'2', cat:'Heavy Knee · BILATERAL', primary:'Back Squat', sets:'4×5-8 · 3 RIR · full rest · leave one in',
+        alts:[{name:'Front Squat',sets:'4×5-8 · true swap · less spinal load'},{name:'Safety Bar Squat',sets:'4×6-8'},{name:'Heel-Elevated Back Squat',sets:'4×8'},{name:'Pause Squat',sets:'4×5'},{name:'Goblet Squat',sets:'3×10-12 · deload / travel only'}] },
+      { id:'hlb4', idx:'3', cat:'Unilateral Knee', ss:'SS1', primary:'Bulgarian Split Squat', sets:'3×8-10 each · 2-3 RIR',
+        alts:[{name:'Reverse Lunge',sets:'3×8 each'},{name:'Walking Lunge',sets:'3×10 each'},{name:'Loaded Step-Up',sets:'3×8 each'}] },
+      { id:'hla7', idx:'4', cat:'Lower Leg · Soleus', ss:'SS1', primary:'Bent-Knee Calf Raise', sets:'2-3×12-15',
+        alts:[{name:'Seated DB Calf Raise',sets:'3×15 · DBs on knees'},{name:'Single-Leg Bent-Knee Calf Raise',sets:'3×12 each'},{name:'Seated Calf Raise',sets:'3×15'}] },
+      { id:'hldl', idx:'5', cat:'Unilateral Knee + Knee Drive · NEW', ss:'SS2', opt:true, primary:'Deficit Reverse Lunge to Knee Drive', sets:'3×8 each · off a plate · drive the knee up · optional',
+        alts:[{name:'Reverse Lunge to Knee Drive',sets:'3×10 each · no deficit'},{name:'Deficit Reverse Lunge',sets:'3×8 each'},{name:'Step-Up to Knee Drive',sets:'3×8 each'},{name:'Walking Lunge',sets:'3×10 each'}] },
+      { id:'hlsl', idx:'6', cat:'Frontal Plane · NEW', ss:'SS2', opt:true, primary:'KB Side Lunge', sets:'3×8-10 each · optional',
+        alts:[{name:'Cossack Squat',sets:'3×8 each'},{name:'Lateral Lunge (DB)',sets:'3×10 each'},{name:'Skater Squat',sets:'3×8 each'},{name:'Slider Lateral Lunge',sets:'3×10 each'}] },
+      { id:'hlkr', idx:'7', cat:'Hip Flexor · NEW', ss:'SS2', opt:true, primary:'KB Knee Raise', sets:'3×10-12 each · KB hooked on the foot · optional',
+        alts:[{name:'Standing Banded Hip Flexor Raise',sets:'3×12-15 each'},{name:'Hanging Knee Raise',sets:'3×10'},{name:'Seated Cable Hip Flexion',sets:'3×15 each'},{name:'Psoas March (supine)',sets:'3×10 each'}] },
+      { id:'hla4', idx:'8', cat:'Posterior Chain', ss:'SS3', primary:'Nordic Curl', sets:'2 sets · not to failure',
+        alts:[{name:'Slider Ham Curl',sets:'3×10'},{name:'Swiss Ball Leg Curl',sets:'3×12'},{name:'Single-Leg Slider Curl',sets:'3×8 each'},{name:'Lying Leg Curl',sets:'3×10'}] },
+      { id:'hla6', idx:'9', cat:'Core · Anti-Lateral + Adductor', ss:'SS3', primary:'Copenhagen Plank', sets:'2-3×20-30 sec each',
+        alts:[{name:'Side-Lying Adduction',sets:'3×15 each'},{name:'Adductor Squeeze',sets:'3×20 sec'},{name:'Adductor Machine',sets:'3×12'}] },
+      { id:'hlb6', idx:'10', cat:'Core · Anti-Extension', ss:'SS3', primary:'Ab Wheel Rollout', sets:'2-3×8-10',
+        alts:[{name:'Hanging Leg Raise',sets:'3×10'},{name:'Dead Bug',sets:'3×8 each'},{name:'Plank',sets:'3×60 sec'}] },
+      { id:'hla9', idx:'11', cat:'Mobility', opt:true, primary:'Hip Mobility Flow', sets:'home / optional',
+        alts:[{name:'90/90 Hip Switches',sets:'2×10'},{name:'Couch Stretch',sets:'2×60 sec each'}] },
+    ]
+  },
+  {
+    id:5, title:'HYROX — Compromised Running', subtitle:'Fri · Race-Specific', type:'hyrox', pill:'HYROX', tag:'Compromised', tagType:'hyrox',
+    desc:'The third hard day of the week and the only session that trains running on pre-fatigued legs. Treat station work as a leg session — that is exactly why Thursday is upper-only and Saturday is off. Move between run and station with NO rest; any pause kills the training effect. Full race simulation only every 2–3 weeks, not weekly.',
+    warmup:['Row or ski 3 min easy','World\'s greatest stretch — 2×5 each','Banded lateral walk','Empty sled push — 1 length','Air squats + arm circles — 1 min'],
+    runCards:[
+      { title:'Session Format — Pick One', stats:['45–70 min','rotate weekly','no rest at transitions'],
+        desc:'Rotate these rather than repeating one. The 1 km run segments sit around 4:35–4:50 /km — race effort on tired legs, not all-out.',
+        structuredAlts:[
+          { title:'Sled Sandwich', detail:'4 rounds · 1 km @ 4:40 + 20m sled push + 20m sled pull · no rest between elements' },
+          { title:'Compromised Kilometres', detail:'5 rounds · 1 km @ 4:45 + 100m sandbag lunge · continuous' },
+          { title:'Station Ladder', detail:'800m run → 20 wall balls → 800m → 15 burpee broad jumps → 800m → 100m farmers carry → 800m' },
+          { title:'Erg Bridge', detail:'4 rounds · 1000m row or ski + 1 km run @ 4:45 · straight through' },
+          { title:'Half Simulation', detail:'Every 2–3 weeks only · 4 × (1 km + station) at race effort · time it, log it' },
+          { title:'Pure Strength-Endurance', detail:'No running · 5 rounds of sled + lunge + wall ball + carry · use when legs are beaten up' },
+          { title:'Full Simulation', detail:'Race weeks only · 8 × (1 km + station) · do not run this monthly' },
+        ] },
+    ],
+    slots:[
+      { id:'hx0', idx:'1', cat:'Activation Primer', primary:'Pogo Hops', sets:'2×15 · then 2×20m ankling',
+        alts:[{name:'A-Skips',sets:'3×20m'},{name:'Banded Glute Bridge',sets:'2×15'},{name:'Jump Rope',sets:'3×30 sec'},{name:'Empty Sled Sprint',sets:'2×15m'}] },
+      { id:'hx1', idx:'2', cat:'Sled Push', primary:'Sled Push', sets:'4-6 × 20-25m · heavy',
+        alts:[{name:'Prowler Push',sets:'5×20m'},{name:'Weight-Plate Push',sets:'5×20m'},{name:'Leg Press (sub)',sets:'4×15'}] },
+      { id:'hx2', idx:'3', cat:'Sled Pull', primary:'Sled Pull', sets:'4-6 × 20-25m · rope hand-over-hand',
+        alts:[{name:'Backward Sled Drag',sets:'5×20m'},{name:'Seated Rope Pull',sets:'5×20m'}] },
+      { id:'hx3', idx:'4', cat:'Sandbag Lunge', primary:'Sandbag Lunge', sets:'4 × 25m · unbroken',
+        alts:[{name:'Barbell Walking Lunge',sets:'4×20m'},{name:'DB Walking Lunge',sets:'4×25m'},{name:'Zercher Lunge',sets:'4×20m'}] },
+      { id:'hx4', idx:'5', cat:'Wall Balls', primary:'Wall Balls', sets:'4 × 25 · 9kg to target',
+        alts:[{name:'Thrusters',sets:'4×15'},{name:'Med-Ball Squat Throw',sets:'4×20'},{name:'Goblet Squat + Press',sets:'4×15'}] },
+      { id:'hx5', idx:'6', cat:'Farmers Carry', primary:'Farmers Carry', sets:'4 × 50m · 2×24kg',
+        alts:[{name:'Trap-Bar Carry',sets:'4×50m'},{name:'Suitcase Carry',sets:'4×30m each'},{name:'Double KB Carry',sets:'4×40m'}] },
+      { id:'hx6', idx:'7', cat:'Burpee Broad Jump', primary:'Burpee Broad Jump', sets:'4 × 20m · steady rhythm',
+        alts:[{name:'Burpees',sets:'4×15'},{name:'Broad Jumps',sets:'4×10'},{name:'Burpee Box Jump-Over',sets:'4×12'}] },
+      { id:'hx7', idx:'8', cat:'Erg', primary:'SkiErg 1000m', sets:'2-4 × 1000m',
+        alts:[{name:'Row 1000m',sets:'2-4×1000m'},{name:'Echo Bike',sets:'4×2 min'},{name:'Assault Bike Sprints',sets:'6×30 sec'}] },
+      { id:'hx8', idx:'9', cat:'Roxzone Conditioning', opt:true, primary:'Transition Drill', sets:'optional finisher',
+        alts:[{name:'Shuttle Runs',sets:'6×40m'},{name:'Sled Sprint',sets:'4×15m light'}] },
+    ]
+  },
+  {
+    id:6, title:'Rest — Tennis Counts', subtitle:'Sat · Recovery + Tennis', type:'rest', pill:'Rest / Tennis', tag:'Recovery', tagType:'run',
+    desc:'No prescribed training. Doubles tennis is not active recovery — it is multidirectional, eccentric, competitive leg load, on exactly the tissues Friday just hammered. Play it, but count it as a session and keep it social. This is the one true gap in an 11-session week, so protect it: no lifting, no running, no "quick 5k".',
+    runCards:[
+      { title:'Rest & Recover', stats:['Recovery day'],
+        desc:'Sauna, walk, mobility, eat, sleep. The Sunday long run is only as good as this day.', alts:[] },
+      { title:'Tennis — If Playing', stats:['doubles','social effort','counts as a session'],
+        desc:'Keep it doubles and keep it friendly. If a singles match or a league fixture lands here, treat Sunday\'s long run as optional and cut it to 60 min easy.', alts:[] },
+      { title:'Optional Mobility', stats:['~10 min'], desc:'',
+        alts:['Couch stretch — 2×60 sec each','Foam roll quads / calves — 5 min','90/90 hip switches — 2×10','Easy walk — 20–30 min'] },
+    ]
+  },
+  {
+    id:7, title:'Long Run', subtitle:'Sun · Aerobic Anchor', type:'run', pill:'Long Run', tag:'Aerobic Anchor', tagType:'run',
+    desc:'The single most important session for a sub-90 half. Build toward 20–22 km with a progressively sharper middle block. Fuel every ~40 min. Honest note: this lands 48 hrs after HYROX and 24 hrs after tennis, so if the legs are flat, cut the quality block before you cut the distance.',
+    runCards:[
+      { title:'Pre-Run Activation', stats:['~4 min','before you start'],
+        desc:'The primer that carries over from every lift day. Wakes the ankle-calf spring so the first 3 km are not spent finding your gait.',
+        alts:['Pogo hops — 2×15','Ankling — 2×20m','A-skips — 2×20m','Banded glute bridge — 15','Leg swings — 10 each direction'] },
+      { title:'Long Run', stats:['18–22 km','90–110 min','5:35–6:00 /km'],
+        desc:'Easy base effort. Distance first — the embedded block below is the progression, and it is optional in any week your legs did not recover.', alts:[] },
+      { title:'Embedded Block — Build Over the Cycle', stats:['pick where you are'],
+        desc:'Progress one step every 2–3 weeks. This is the session that turns 4:38 into 4:20.',
+        structuredAlts:[
+          { title:'Step 1', detail:'16 km: 5 km easy + 6 km @ 4:45 + 5 km easy' },
+          { title:'Step 2', detail:'18 km: 5 km easy + 8 km @ 4:45 + 5 km easy' },
+          { title:'Step 3', detail:'20 km: 6 km easy + 10 km @ 4:45 → 4:35 + 4 km easy' },
+          { title:'Step 4', detail:'21 km: 5 km easy + 12 km @ 4:40 → 4:30 + 4 km easy' },
+          { title:'Fallback', detail:'Legs flat? Straight easy 90 min, no block. Never force it.' },
+        ] },
+      { title:'Optional Finish', stats:['final 10 min','only if fresh'], desc:'',
+        alts:['6 × 30 sec strides — full walk recovery','Last 10 min drift easy to moderate'] },
+    ]
+  },
+];
+let ACTIVE = 'fb';
+let DAYS = DAYS_FB;
+const PROGRAMS = { fb: DAYS_FB, ulul: DAYS_ULUL, hyrox: DAYS_HYROX };
+const SUBTITLES = {
+  fb: 'ABC · 3 full-body days (squat / hinge / unilateral). Strength leads; running is easy support. Log weights — history shows on every exercise.',
+  ulul: 'ULUL · 4 days, Upper/Lower ×2 with running baked in. Heavy once, light-variation once per pattern. ⚡ = superset. Shares logged history with the 3× program.',
+  hyrox: 'Hybrid Week · U/L/U/L + 5 runs (3 easy · 1 speed · 1 long) + HYROX Friday + Saturday off. Mon/Tue strength days, Wed/Thu volume days. Heavy hinge Tue (far from Friday), moderate squat Thu. One heavy main at full rest, everything else supersets. Chest 2× per upper day, biceps both. Single-leg and hinge on both lower days. Core rotates: anti-rotation Mon, anti-lateral Tue, anti-extension Wed, both Thu. Run first on every double. Free-weight/band only. ⚡ = superset · opt = drop it when the clock is tight.'
+};
+
+// ─────────────────────────────────────────
+// STORAGE
+// ─────────────────────────────────────────
+const STORAGE_KEY = 'hybrid-athlete-v3';
+let db = {};
+
+function loadDB() {
+  try { const r = localStorage.getItem(STORAGE_KEY); if (r) db = JSON.parse(r); } catch(e) { db = {}; }
+  document.getElementById('subtitle').innerHTML = SUBTITLES[ACTIVE];
+  renderNav();
+  renderWorkout();
+  refreshAllBadges();
+  refreshAllHistories();
+}
+
+function renderNav() {
+  const dow = d => (d.subtitle.split('·')[0]||'').trim();
+  document.getElementById('week-strip').innerHTML = DAYS.map((d,i)=>
+    `<div class="day-pill${i===0?' active':''}" onclick="setDay(${d.id})"><div class="pill-label">${dow(d)}</div><div class="pill-num">0${d.id}</div><div class="pill-type">${d.pill||''}</div></div>`
+  ).join('');
+  document.getElementById('sidebar').innerHTML = DAYS.map((d,i)=>
+    `<div class="sidebar-item${i===0?' active':''}" onclick="setDay(${d.id})"><div class="si-day">${dow(d)} · Day 0${d.id}</div><div class="si-title">${d.title}</div><span class="si-tag tag-${d.tagType||'run'}">${d.tag||''}</span></div>`
+  ).join('');
+}
+
+function switchProgram(key, btn) {
+  ACTIVE = key;
+  DAYS = PROGRAMS[key] || DAYS_FB;
+  document.getElementById('subtitle').innerHTML = SUBTITLES[ACTIVE];
+  document.querySelectorAll('.prog-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderNav();
+  renderWorkout();
+  refreshAllBadges();
+  refreshAllHistories();
+  setDay(1);
+  if (document.getElementById('view-progress').classList.contains('active')) renderProgress();
+}
+
+function saveDB() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e) {}
+}
+
+// ─────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────
+function renderWorkout() {
+  document.getElementById('workout-content').innerHTML = DAYS.map(day => {
+    let inner = '';
+    if (day.warmup) inner += `<div class="warmup-strip"><div class="ws-label">Warm-Up · every session · ~5 min</div>${day.warmup.map(w=>`<div class="ws-item"><span class="alt-dot"></span>${w}</div>`).join('')}</div>`;
+    if (day.runCards) inner += day.runCards.map(renderRunCard).join('');
+    if (day.slots) inner += `<div class="blocks">${day.slots.map(renderBlock).join('')}</div>`;
+    return `<div class="day-panel${day.id===1?' active':''}" id="day${day.id}">
+      <div class="day-header">
+        <div class="day-num-big">0${day.id}</div>
+        <div class="day-info">
+          <div class="day-label-sm">${day.subtitle}</div>
+          <div class="day-title">${day.title}</div>
+          <p class="day-desc">${day.desc}</p>
+        </div>
+      </div>
+      ${inner}
+    </div>`;
+  }).join('');
+}
+
+function patternOf(cat) {
+  const M = {
+    'Horizontal Push':'Horiz Push','Vertical Press':'Vert Push','Horizontal Pull':'Horiz Pull',
+    'Vertical Pull':'Vert Pull','Pull':'Pull',
+    'Heavy Squat':'Squat','Heavy Knee':'Squat','Light Knee':'Squat','Quad (secondary)':'Squat',
+    'Heavy Hinge':'Hinge','Light Hinge':'Hinge','Hinge / Glute':'Hinge','Hinge Power':'Hinge','Posterior Chain':'Hamstring',
+    'Unilateral Squat':'Single-Leg','Unilateral Knee':'Single-Leg','Unilateral Hinge':'Single-Leg','Runner · Unilateral':'Single-Leg',
+    'Plyo Primer':'Plyo','Plyo · Reactive':'Plyo','Runner · Plyo':'Plyo',
+    'Side Delt':'Delt','Rear Delt':'Delt','Triceps':'Isolation','Biceps':'Isolation',
+    'Lower Leg':'Calf','Isolation + Soleus':'Calf','Runner · Soleus':'Calf','Adductor':'Adductor',
+    'Core':'Core','Core + Adductor':'Core','Rotational Core':'Core','Frontal Core':'Core',
+    'Carry':'Carry','Mobility':'Mobility','Corrective':'Mobility',
+    'Anti-Rotation Core':'Core','Grip + Core':'Grip','Rear Delt / Scap':'Delt','Second Vertical Pull':'Vert Pull',
+    'Plyo Primer · MAX':'Plyo','Stiffness Primer · SUBMAX':'Plyo','Activation Primer':'Plyo',
+    'Knee (moderate)':'Squat','Glute / Hinge':'Hinge','Glute Med · NEW':'Glute','Hip Flexor · NEW':'Hip Flexor','Farmers Carry':'Carry',
+    'Sled Push':'Station','Sled Pull':'Station','Sandbag Lunge':'Station','Wall Balls':'Station','Burpee Broad Jump':'Station','Erg':'Station','Roxzone Conditioning':'Conditioning'
+  };
+  return M[cat] || cat;
+}
+
+function renderBlock(slot) {
+  const allEx = [slot.primary, ...slot.alts.map(a=>a.name)];
+  const slotPR = Math.max(0,...allEx.map(getPR));
+  const prHtml = `<span class="pr-badge" id="pr-slot-${slot.id}" style="${slotPR>0?'':'display:none'}">PR ${slotPR}lbs</span>`;
+  const altItems = slot.alts.map(a =>
+    `<div class="alt-item"><div class="alt-dot"></div><span class="alt-name">${a.name}</span><span class="alt-sets">${a.sets}</span></div>`
+  ).join('');
+  return `<div class="block is-primary-day" id="block-${slot.id}">
+    <div class="block-header" onclick="toggleBlock(this)">
+      <span class="block-index">${slot.idx}</span>
+      <span class="block-cat">${slot.cat}</span>${slot.ss?`<span class="ss-pill">⚡${slot.ss}</span>`:''}${slot.opt?'<span class="opt-pill">home/opt</span>':''}
+      <span class="block-name"><span class="primary-pill">${slot.primary}</span><span class="pat-pill">${patternOf(slot.cat)}</span><span class="primary-sets">${slot.sets}</span></span>
+      <div class="block-actions">
+        <button class="log-btn" onclick="openLog(event,'${slot.id}')">+ Log</button>
+        ${prHtml}
+      </div>
+      <span class="block-toggle">▾</span>
+    </div>
+    <div class="block-body">
+      ${slot.alts.length ? `<div class="alts-label">Alternatives</div><div class="alts-list">${altItems}</div>` : ''}
+      <div class="block-history" id="hist-${slot.id}"></div>
+    </div>
+  </div>`;
+}
+
+function renderRunCard(c) {
+  const statsHtml = c.stats.map(s=>`<span class="run-stat">${s}</span>`).join('');
+  let altsHtml = '';
+  if (c.structuredAlts && c.structuredAlts.length) {
+    altsHtml = `<div style="margin-top:12px"><div class="alts-label">Formats</div>${
+      c.structuredAlts.map(a=>`<div class="run-alt-item"><span class="run-alt-title">${a.title}</span><span class="run-alt-detail">${a.detail}</span></div>`).join('')
+    }</div>`;
+  } else if (c.alts && c.alts.length) {
+    altsHtml = `<div style="margin-top:12px"><div class="alts-label">Circuit</div><div class="alts-list">${
+      c.alts.map(a=>`<div class="alt-item"><div class="alt-dot"></div><span>${a}</span></div>`).join('')
+    }</div></div>`;
+  }
+  return `<div class="run-card">
+    <div class="run-card-title">${c.title}</div>
+    ${statsHtml?`<div class="run-details">${statsHtml}</div>`:''}
+    ${c.desc?`<p class="run-desc">${c.desc}</p>`:''}
+    ${altsHtml}
+  </div>`;
+}
+
+// ─────────────────────────────────────────
+// MODAL
+// ─────────────────────────────────────────
+let currentSlotId = '';
+
+function getSlot(id) {
+  for (const d of DAYS) if (d.slots) for (const s of d.slots) if (s.id===id) return s;
+  return null;
+}
+
+function openLog(e, slotId) {
+  e.stopPropagation();
+  currentSlotId = slotId;
+  const slot = getSlot(slotId);
+  document.getElementById('modal-slot-name').textContent = slot.cat;
+  document.getElementById('modal-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('modal-note').value = '';
+  const sel = document.getElementById('modal-ex-select');
+  sel.innerHTML = '';
+  const p = document.createElement('option');
+  p.value = slot.primary; p.textContent = `${slot.primary} — ${slot.sets}`;
+  sel.appendChild(p);
+  if (slot.alts.length) {
+    const grp = document.createElement('optgroup'); grp.label = 'Alternatives';
+    slot.alts.forEach(a => { const o=document.createElement('option'); o.value=a.name; o.textContent=`${a.name} — ${a.sets}`; grp.appendChild(o); });
+    sel.appendChild(grp);
+  }
+  prefillSets();
+  document.getElementById('modal').classList.add('open');
+}
+
+function onExSelectChange() { prefillSets(); }
+
+function prefillSets() {
+  const exName = document.getElementById('modal-ex-select').value;
+  const sc = document.getElementById('sets-container');
+  sc.innerHTML = '';
+  const last = (db[exName]||[]).slice(-1)[0];
+  const count = last ? last.sets.length : 3;
+  for (let i=0; i<count; i++) addSetRow(last?.sets[i]?.weight??'', last?.sets[i]?.reps??'');
+  renderModalHistory(exName);
+}
+
+function renderModalHistory(exName) {
+  const el = document.getElementById('modal-history');
+  const history = db[exName]||[];
+  if (!history.length) { el.innerHTML=`<p class="modal-history-empty">No previous sessions for ${exName}.</p>`; return; }
+  const pr = getPR(exName);
+  const recent = [...history].reverse().slice(0,3);
+  const rows = recent.map(e => {
+    const maxW = Math.max(0,...e.sets.map(s=>s.weight));
+    const isPR = maxW>0 && maxW===pr;
+    const dateStr = new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
+    return `<div class="mh-row${isPR?' is-pr':''}">
+      <span class="mh-date">${dateStr}</span>
+      <span class="mh-sets">${fmtSets(e.sets)}</span>
+      ${isPR?'<span class="mh-pr-tag">PR</span>':''}
+      ${e.note?`<div class="mh-note">"${e.note}"</div>`:''}
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px">Previous sessions</div>${rows}`;
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+function addSetRow(weight='', reps='') {
+  const sc = document.getElementById('sets-container');
+  const n = sc.children.length+1;
+  const row = document.createElement('div'); row.className='set-row';
+  row.innerHTML = `<span class="set-num">${n}</span>
+    <input class="set-input weight-input" type="number" placeholder="0" value="${weight}" min="0" step="2.5" inputmode="decimal">
+    <input class="set-input" type="number" placeholder="0" value="${reps}" min="0" inputmode="numeric">
+    <button class="set-del" onclick="this.parentElement.remove();renumber()">✕</button>`;
+  sc.appendChild(row);
+  row.querySelector('.weight-input').addEventListener('blur', function() {
+    if (!this.value) return;
+    sc.querySelectorAll('.weight-input').forEach(i=>{ if(!i.value) i.value=this.value; });
+  });
+}
+
+function renumber() {
+  document.querySelectorAll('#sets-container .set-row').forEach((r,i)=>r.querySelector('.set-num').textContent=i+1);
+}
+
+function saveLog() {
+  const rows = document.querySelectorAll('#sets-container .set-row');
+  const sets = [];
+  rows.forEach(r => {
+    const ins = r.querySelectorAll('.set-input');
+    const w = parseFloat(ins[0].value)||0, reps = parseInt(ins[1].value)||0;
+    if (reps>0) sets.push({weight:w,reps});
+  });
+  if (!sets.length) { showToast('Add at least one set with reps'); return; }
+  const exName = document.getElementById('modal-ex-select').value;
+  const note = document.getElementById('modal-note').value.trim();
+  if (!db[exName]) db[exName]=[];
+  db[exName].push({date:new Date().toISOString(), slotId:currentSlotId, sets, note});
+  saveDB();
+  refreshSlotBadge(currentSlotId);
+  refreshSlotHistory(currentSlotId);
+  closeModal();
+  showToast(`Saved: ${exName} ✓`);
+}
+
+// ─────────────────────────────────────────
+// BADGES + HISTORY
+// ─────────────────────────────────────────
+function getPR(ex) { return Math.max(0,...(db[ex]||[]).flatMap(e=>e.sets.map(s=>s.weight))); }
+
+function getSlotPR(slotId) {
+  const slot = getSlot(slotId); if (!slot) return 0;
+  return Math.max(0,...[slot.primary,...slot.alts.map(a=>a.name)].map(getPR));
+}
+
+function refreshSlotBadge(slotId) {
+  const el = document.getElementById('pr-slot-'+slotId); if (!el) return;
+  const pr = getSlotPR(slotId);
+  if (pr>0) { el.textContent=`PR ${pr}lbs`; el.style.display='inline'; } else el.style.display='none';
+}
+
+function refreshAllBadges() { DAYS.forEach(d=>{ if(d.slots) d.slots.forEach(s=>refreshSlotBadge(s.id)); }); }
+
+function fmtSets(sets) { return sets.map(s=>s.weight>0?`${s.weight}lbs×${s.reps}`:`${s.reps} reps`).join(' · '); }
+
+function refreshSlotHistory(slotId) {
+  const el = document.getElementById('hist-'+slotId); if (!el) return;
+  const slot = getSlot(slotId); if (!slot) return;
+  const allEx = [slot.primary,...slot.alts.map(a=>a.name)];
+  const entries = allEx.flatMap(ex=>(db[ex]||[]).map(e=>({...e,exName:ex})))
+    .sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
+  if (!entries.length) { el.innerHTML=''; return; }
+  const slotPR = getSlotPR(slotId);
+  el.innerHTML = '<div class="alts-label" style="margin-top:14px">Recent Sessions</div>' +
+    entries.map(e => {
+      const maxW = Math.max(0,...e.sets.map(s=>s.weight));
+      return `<div class="bh-row">
+        <span class="bh-date">${new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
+        <span class="bh-ex">${e.exName}</span>
+        <span class="bh-sets">${fmtSets(e.sets)}</span>
+        ${maxW>0&&maxW===slotPR?'<span class="bh-pr">PR</span>':''}
+      </div>`;
+    }).join('');
+}
+
+function refreshAllHistories() { DAYS.forEach(d=>{ if(d.slots) d.slots.forEach(s=>refreshSlotHistory(s.id)); }); }
+
+// ─────────────────────────────────────────
+// PROGRESS VIEW
+// ─────────────────────────────────────────
+function renderProgress(filter='') {
+  const container = document.getElementById('exercise-cards');
+  const f = (filter||'').toLowerCase();
+  const seen = new Set();
+  const slotCards = [];
+  DAYS.forEach(day => {
+    if (!day.slots) return;
+    day.slots.forEach(slot => {
+      if (seen.has(slot.id)) return; seen.add(slot.id);
+      const allEx = [slot.primary,...slot.alts.map(a=>a.name)];
+      const hasData = allEx.some(ex=>(db[ex]||[]).length>0);
+      if (!hasData) return;
+      if (f && !slot.cat.toLowerCase().includes(f) && !allEx.some(e=>e.toLowerCase().includes(f))) return;
+      slotCards.push({slot, dayTitle:day.title});
+    });
+  });
+  if (!slotCards.length) {
+    container.innerHTML='<div class="empty-state"><div class="big">EMPTY</div><p>No sessions logged yet.<br>Hit <strong style="color:var(--accent)">+ Log</strong> on any exercise to start.</p></div>';
+    return;
+  }
+  container.innerHTML = slotCards.map(({slot,dayTitle}) => {
+    const allEx = [slot.primary,...slot.alts.map(a=>a.name)];
+    const slotPR = getSlotPR(slot.id);
+    const prText = slotPR>0?`PR ${slotPR} lbs`:'Reps only';
+    const total = allEx.reduce((n,ex)=>n+(db[ex]||[]).length,0);
+    const cardId = 'excard-'+slot.id;
+    const grouped = allEx.map(ex=>({ex,entries:db[ex]||[]})).filter(g=>g.entries.length>0);
+    const groupsHtml = grouped.map(({ex,entries}) => {
+      const exPR = getPR(ex);
+      const rows = [...entries].reverse().map(e => {
+        const maxW = Math.max(0,...e.sets.map(s=>s.weight));
+        const safeEx=ex.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        const safeDate=e.date.replace(/'/g,"\\'");
+        return `<tr class="${maxW>0&&maxW===exPR?'pr-row':''}">
+          <td>${new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'})}</td>
+          <td>${fmtSets(e.sets)}</td>
+          <td>${e.note||'—'}</td>
+          <td><button class="del-entry" onclick="deleteEntry('${safeEx}','${safeDate}','${slot.id}')">✕</button></td>
+        </tr>`;
+      }).join('');
+      return `<div class="group-label">${ex}${ex===slot.primary?' <span style="opacity:.4;font-size:9px">(primary)</span>':''} — PR: ${exPR>0?exPR+'lbs':'reps only'}</div>
+        <table class="history-table"><thead><tr><th>Date</th><th>Sets</th><th>Notes</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    }).join('');
+    return `<div class="ex-card" id="${cardId}">
+      <div class="ex-card-head" onclick="document.getElementById('${cardId}').classList.toggle('open')">
+        <span class="ex-card-name">${slot.cat} <span style="opacity:.35;font-size:11px">· ${dayTitle}</span></span>
+        <span class="ex-card-pr">${prText}</span>
+        <span class="ex-card-count">${total} session${total!==1?'s':''}</span>
+        <span class="ex-card-toggle">▾</span>
+      </div>
+      <div class="ex-card-body">${groupsHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+function deleteEntry(exName, date, slotId) {
+  if (!db[exName]) return;
+  db[exName] = db[exName].filter(e=>e.date!==date);
+  if (!db[exName].length) delete db[exName];
+  saveDB(); refreshSlotBadge(slotId); refreshSlotHistory(slotId);
+  renderProgress(document.querySelector('.search-bar')?.value);
+}
+
+// ─────────────────────────────────────────
+// NAV
+// ─────────────────────────────────────────
+function switchView(v,btn) {
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn:not(.prog-btn)').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (v==='progress') renderProgress();
+}
+
+function setDay(n) {
+  document.querySelectorAll('.day-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.day-pill').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(p=>p.classList.remove('active'));
+  document.getElementById('day'+n).classList.add('active');
+  document.querySelectorAll('.day-pill')[n-1].classList.add('active');
+  document.querySelectorAll('.sidebar-item')[n-1].classList.add('active');
+}
+
+function toggleBlock(h) { h.parentElement.classList.toggle('open'); }
+
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target.id==='modal') closeModal(); });
+loadDB();
+</script>
+</body>
+</html>
