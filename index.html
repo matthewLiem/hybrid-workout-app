@@ -909,13 +909,23 @@ const SHORT_CUT = new Set(['huadip','huacar','hlplyo','hlb3','hubfly','hub6','hu
 const SHORT_EDIT = {
   hllk:  { opt:false, sets:'3×6-8 · moderate · RPE ~7 · first to cut if legs are cooked' },
   hlb2:  { sets:'3×5 · main lift · RPE 7-8 · no failure' },
+  hub2:  { primary:'Lat Pulldown', sets:'3×10-12 · neutral grip · micro-load with Platemates',
+           alts:[{name:'Pull-Ups',sets:'3×AMRAP'},{name:'Neutral-Grip Pull-Up',sets:'3×8'},{name:'Single-Arm Cable Pulldown',sets:'3×10 each'},{name:'Chin-Ups',sets:'3×AMRAP'}] },
   hubtri:{ ss:'C' },
   hublat:{ ss:'C' },
   hubham:{ ss:'D' },
 };
+// Extra slots inserted after an existing slot id (same exercise names as elsewhere, so history carries over)
+const SHORT_ADD = {
+  huacurl:[{ id:'huaohe', ss:'D', cat:'Triceps', primary:'Overhead Triceps Ext', sets:'3×10-12 · cable rope or one DB · long-head stretch',
+             alts:[{name:'Skull Crushers',sets:'3×8-10'},{name:'Triceps Pushdown',sets:'3×10-15'},{name:'Weighted Dip',sets:'3×8-10'}] }],
+  hla6:   [{ id:'hlb3', opt:true, cat:'Hinge / Glute', primary:'Barbell Hip Thrust', sets:'3×8-12 · moderate · optional',
+             alts:[{name:'Single-Leg Hip Thrust',sets:'3×10 each'},{name:'Cable Pull-Through',sets:'3×12'},{name:'Barbell Glute Bridge',sets:'3×10'}] }],
+};
 const DAYS_SHORT = DAYS_HYROX.map(d => {
   if (!d.slots || !d.slots.length) return d;
-  const slots = d.slots.filter(x => !SHORT_CUT.has(x.id)).map(x => ({...x, ...(SHORT_EDIT[x.id]||{})}));
+  const slots = d.slots.filter(x => !SHORT_CUT.has(x.id))
+    .flatMap(x => [{...x, ...(SHORT_EDIT[x.id]||{})}, ...(SHORT_ADD[x.id]||[])]);
   const order = [...new Set(slots.map(x => x.ss || x.id))];
   slots.sort((a,b) => order.indexOf(a.ss||a.id) - order.indexOf(b.ss||b.id));
   // relabel blocks A, B, C… and drop the superset tag from anything left alone
@@ -931,7 +941,7 @@ let ACTIVE = 'hyrox';
 let DAYS = DAYS_HYROX;
 const PROGRAMS = { fb: DAYS_FB, ulul: DAYS_ULUL, hyrox: DAYS_HYROX, short: DAYS_SHORT };
 const SUBTITLES = {
-  short: 'Condensed 4-Day · same week as Hybrid Week, trimmed to 6-7 lifts a day for ~45-55 min sessions. Main lifts, pull-ups, biceps on both upper days, a hinge and single-leg work on both lower days are all kept. Cut: dips, farmers carry, pogo primer, hip thrust, cable fly, rear delt fly, upright row, dead hang, bent-knee calf; squat drops to 3×5. Shares logged history with Hybrid Week.',
+  short: 'Condensed 4-Day · same week as Hybrid Week, trimmed to 6-7 lifts a day for ~45-55 min sessions. Main lifts, pull-ups, biceps on both upper days, a hinge and single-leg work on both lower days are all kept. Cut: dips, farmers carry, pogo primer, cable fly, rear delt fly, upright row, dead hang, bent-knee calf; squat drops to 3×5. Pull-ups Mon, lat pulldown Wed. Overhead triceps ext added Mon; hip thrust moves to Thu as optional. Shares logged history with Hybrid Week.',
   fb: 'ABC · 3 full-body days (squat / hinge / unilateral). Strength leads; running is easy support. Log weights — history shows on every exercise.',
   ulul: 'ULUL · 4 days, Upper/Lower ×2 with running baked in. Heavy once, light-variation once per pattern. ⚡ = superset. Shares logged history with the 3× program.',
   hyrox: 'Hybrid Week · Upper 1 (strength, push) · Threshold + Lower A (deadlift) · Upper 2 (volume, pull) · Lower B (squat) · HYROX Friday · Saturday off · Sunday long. Run first on every double. Deadlift sits on Tuesday because a threshold run mainly tires the quads, so the squat gets the fresher Thursday slot. Blocks run in superset order — ⚡A pairs go back to back. opt = drop it when the clock is tight.'
