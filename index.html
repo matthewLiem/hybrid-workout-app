@@ -136,7 +136,7 @@
   .swap > summary::-webkit-details-marker { display:none; }
   .swap .alts-list { margin-top:8px; }
   .ladder { display:grid; gap:6px; }
-  .ladder-row { display:grid; grid-template-columns:78px 1fr; gap:8px; font-size:12px; color:var(--text2); line-height:1.45; padding:7px 10px; border-radius:6px; background:var(--surface2); }
+  .ladder-row { display:grid; grid-template-columns:72px 1fr; gap:8px; font-size:12px; color:var(--text2); line-height:1.45; padding:7px 10px; border-radius:6px; background:var(--surface2); }
   .ladder-row b { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.08em; color:var(--accent); font-weight:500; }
   .ladder-rule { font-size:12px; color:var(--text); padding:6px 2px 0; }
   .opt-pill { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); border:1px dashed var(--border2); padding:2px 7px; border-radius:4px; white-space:nowrap; }
@@ -763,7 +763,7 @@ const DAYS_HYROX = [
   {
     id:1, title:'Upper 1 — Push (Strength) + Easy Run', subtitle:'Mon · Easy Z2 / Heavy Push', type:'double', pill:'Up 1 + Run', tag:'Push · Strength', tagType:'strength',
     desc:'The STRENGTH upper day — everything lives in the 4–8 rep range, push-biased. Bench is paired with face pulls rather than rows so nothing steals bench performance, and the filler goes inside the bench rest, not instead of it. Barbell row and standing press both load the low back, so they are deliberately never paired together. If the low back is already cooked for Tuesday, swap the barbell row to chest-supported or 1-arm DB row. Upper-only on purpose: Sunday long run is still in the legs and Tuesday is the big day.',
-    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap push-ups — 2×10','Light external rotation — 2×15','Med ball chest pass — 2×5 · explosive (upper plyo primer)'],
+    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap push-ups — 2×10','Light external rotation — 2×15','Med ball chest pass — 2×5 · explosive (upper plyo primer)','Optional: jump rope 1-2 min · LOW only'],
     restNote:REST_NOTE,
     runCards:[
       { title:'Zone 2 Easy Run — AM', stats:['40–50 min','5:35–6:10 /km','under 156 bpm','+ strides'],
@@ -839,7 +839,7 @@ const DAYS_HYROX = [
   {
     id:3, title:'Upper 2 — Pull (Volume)', subtitle:'Wed · Volume Pull', type:'strength', pill:'Upper 2', tag:'Pull · Volume', tagType:'strength',
     desc:'The HYPERTROPHY upper day — everything in the 8–15 range, shorter rests, chasing volume rather than load. No run today: this is the clear gap between Tuesday’s deadlift and Thursday’s squat, and the roomiest day of the week. Dead hangs close the session for grip endurance, which is the HYROX carry and sled pull.',
-    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap pull-ups — 2×8','Cat-cow — 2×8','Med ball slam — 2×6 · explosive (upper plyo primer)'],
+    warmup:['Band pull-aparts — 2×15','Shoulder CARs — 5 each','Scap pull-ups — 2×8','Cat-cow — 2×8','Med ball slam — 2×6 · explosive (upper plyo primer)','Optional: med ball rotational throw — 2×5 each side (tennis)','Optional: jump rope 1-2 min · LOW only'],
     restNote:REST_NOTE,
     slots:[
       { id:'hub4', idx:'A1', ss:'A', cat:'Horizontal Push', primary:'Incline DB Press', sets:'3×8-10',
@@ -974,7 +974,7 @@ const DAYS_HYROX = [
 // Built from the slot library above, so slot ids / exercise names (and logged history) are unchanged.
 const NEW_SLOTS = {
   hlslh: { cat:'Reactive Plyo', primary:'Single-Leg Hops', sets:'3×5 each · quick, stiff contacts · stop when contacts slow down',
-           alts:[{name:'Single-Leg Jump Rope',sets:'3×30 sec each'},{name:'Single-Leg Pogos',sets:'3×8 each'},{name:'Bounds',sets:'3×6 each'},{name:'Lateral Hops',sets:'3×6 each'},{name:'Depth Drop (stick the landing)',sets:'3×4 · January+'}] },
+           alts:[{name:'Single-Leg Forward Hops',sets:'3×5 each'},{name:'Single-Leg Lateral Hops',sets:'3×6 each'},{name:'Bounds',sets:'3×6 each'},{name:'Skater Bounds',sets:'3×6 each'},{name:'Single-Leg Jump Rope',sets:'3×30 sec each'},{name:'Single-Leg Pogos',sets:'3×8 each'},{name:'Depth Drop (stick the landing)',sets:'3×4 · January+'},{name:'Single-Leg Drop Landing',sets:'3×3 each · January+'}] },
   huaohe:{ cat:'Triceps', primary:'Overhead Triceps Ext', sets:'3×10-12 · cable rope or one DB · long-head stretch',
            alts:[{name:'Skull Crushers',sets:'3×8-10'},{name:'Triceps Pushdown',sets:'3×10-15'},{name:'Weighted Dip',sets:'3×8-10'}] },
   hlhc:  { cat:'Hamstring Curl', primary:'Cable Leg Curl', sets:'3×10-15 · knee-flexion hamstring work the hinges miss',
@@ -985,7 +985,7 @@ const HYBRID_PLAN = {
   1:{ core:[['hua2','A'],['hua6','A'],['hua3','B'],['hua10','B'],['hua4','C'],['huacurl','C']],
       extra:[['huaohe','D'],['huacar','D'],['huadip','E',{sets:'3×8-10'}]] },
   2:{ core:[['hlplyo','P',{cat:'Plyo · LOW', sets:'2×45 sec rope or 2×15-20 pogos · low only on tired legs',
-              alts:[{name:'Jump Rope',sets:'2×45 sec'},{name:'Single-Leg Jump Rope',sets:'2×20 sec each'},{name:'Ankle Hops',sets:'2×20'},{name:'Single-Leg Pogos',sets:'2×8 each'}]}],
+              alts:[{name:'Jump Rope',sets:'2×45 sec'},{name:'Single-Leg Jump Rope',sets:'2×20 sec each'},{name:'Alternating-Foot Rope',sets:'2×45 sec'},{name:'High-Knee Rope',sets:'2×30 sec'},{name:'Ankle Hops',sets:'2×20'},{name:'Line Hops (fwd/back + lateral)',sets:'2×20 each'},{name:'Single-Leg Pogos',sets:'2×8 each'},{name:'A-Skips',sets:'2×20m'}]}],
             ['hla2','A'],['hlc1','B'],['hlpal','B'],['hllat','C'],['hlb7','C']],
       extra:[['hllk','D',{sets:'3×6-8 · moderate · RPE ~7 · skip if the threshold run cooked your legs'}],['hlb8','D'],['hlb3','E',{sets:'3×8-12 · moderate'}]] },
   3:{ core:[['hub4','A'],['hub3','A'],['hub9','B'],
@@ -993,7 +993,8 @@ const HYBRID_PLAN = {
               alts:[{name:'Pull-Ups',sets:'3×AMRAP'},{name:'Neutral-Grip Pull-Up',sets:'3×8'},{name:'Single-Arm Cable Pulldown',sets:'3×10 each'},{name:'Chin-Ups',sets:'3×AMRAP'}]}],
             ['hubtri','C'],['hublat','C']],
       extra:[['hubham','D'],['hub6','D'],['hubfly','E'],['hubup','E',{sets:'3×10-15 · wide grip or rope · elbows to shoulder height only'}],['hub8','F']] },
-  4:{ core:[['hla1','A',{cat:'Plyo · LOW + MOD', sets:'rope/pogos 1-2 min, then 3×3-5 box jumps · land soft'}],['hlslh','A'],
+  4:{ core:[['hla1','A',{cat:'Plyo · LOW + MOD', sets:'rope/pogos 1-2 min, then 3×3-5 box jumps · land soft',
+              alts:[{name:'Broad Jumps',sets:'3×4'},{name:'Tuck Jumps',sets:'3×5'},{name:'Split-Squat Jumps',sets:'3×4 each'},{name:'Low Hurdle Hops',sets:'3×5'},{name:'Lateral Box Step-Over Hops',sets:'3×6'},{name:'Squat Jumps',sets:'3×5'},{name:'Depth Jumps',sets:'3×4 · January+'}]}],['hlslh','A'],
             ['hlb2','B',{sets:'3×5 · main lift · RPE 7-8 · no failure'}],
             ['hlrdl','C'],['hla7','C',{sets:'3×10-15 · heavy · hold a DB · soleus, the runner’s calf'}],
             ['hlb4','D'],['hla6','D']],
@@ -1001,9 +1002,9 @@ const HYBRID_PLAN = {
 };
 const PLYO_LADDER = {
   levels:[
-    ['LOW','Jump rope (2- or 1-leg), pogos, ankle hops','tendon stiffness, springy contacts','50-100 contacts'],
-    ['MODERATE','Single-leg hops, bounds, lateral/skater hops, box jumps','single-leg power, horizontal force','30-60 contacts'],
-    ['HIGH','Depth drops → depth jumps, single-leg drop jumps','absorbing hard landings, max reactive strength','15-30 contacts · January+'],
+    ['LOW','Jump rope (2-leg, alternating, 1-leg, high knees, side-to-side) · pogos · ankle hops · line hops (fwd/back, lateral) · skipping / A-skips · single-leg pogos','tendon stiffness, springy contacts','50-100 contacts'],
+    ['MODERATE','Box jumps · broad jumps · single-leg hops (in place, forward, lateral) · bounds · skater bounds · low hurdle hops · tuck jumps · split-squat jumps · lateral box step-over hops','single-leg power, horizontal force','30-60 contacts'],
+    ['HIGH','Depth drops (stick it) → depth jumps · single-leg drop landings · drop → broad jump · continuous hurdle hops · single-leg bounds for distance · triple jump','absorbing hard landings, max reactive strength','15-30 contacts · January+'],
   ],
   rules:[
     'Pick two: one LOW drill as the warm-up, then EITHER one MODERATE OR one HIGH drill — never both.',
