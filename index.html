@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'">
 <title>Hybrid Athlete Weekly Plan</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@500;700&family=Fraunces:opsz,wght@9..144,600&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script>try{document.documentElement.dataset.theme=localStorage.getItem('hybrid-theme')||'volt'}catch(e){}</script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('hybrid-theme')||'paper'}catch(e){}</script>
 <style>
   /* THEMES — set with <html data-theme="…">; default is Volt */
   :root, [data-theme="volt"] {
@@ -113,11 +113,37 @@
   .express-strip { display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap; }
   .express-btn { font-family:'DM Mono',monospace; font-size:11px; padding:8px 14px; border-radius:6px; border:1px solid var(--accent3); background:transparent; color:var(--accent3); cursor:pointer; white-space:nowrap; }
   body.express .express-btn { background:var(--accent3); color:var(--on-accent); }
+  details.more { margin-bottom:10px; border:1px solid var(--border); border-radius:10px; background:var(--surface); }
+  details.more > summary { list-style:none; cursor:pointer; padding:11px 16px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); display:flex; justify-content:space-between; align-items:center; }
+  details.more > summary::-webkit-details-marker { display:none; }
+  details.more > summary::after { content:'＋'; font-size:13px; }
+  details.more[open] > summary::after { content:'－'; }
+  details.more > .more-body { padding:0 16px 12px; }
+  details.more .day-desc, details.more .run-desc { margin-top:0; }
+  .express-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .express-bar .eb-text { font-size:12px; color:var(--muted); }
+  .day-progress { position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 12px; margin-bottom:6px; }
+  .dp-row { display:flex; justify-content:space-between; font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--text2); margin-bottom:6px; }
+  .dp-row b { color:var(--accent); font-weight:500; }
+  .dp-track { height:6px; border-radius:6px; background:var(--surface3); overflow:hidden; }
+  .dp-fill { height:100%; width:0; background:var(--accent); border-radius:6px; transition:width .3s; }
+  .done-btn { width:30px; height:30px; min-width:30px; border-radius:50%; border:1.5px solid var(--border3); background:transparent; color:transparent; font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+  .block.done .done-btn { background:var(--accent3); border-color:var(--accent3); color:var(--on-accent); }
+  .block.done { opacity:.55; }
+  .block.done .primary-pill { text-decoration:line-through; }
+  .swap { margin-top:10px; }
+  .swap > summary { cursor:pointer; list-style:none; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+  .swap > summary::-webkit-details-marker { display:none; }
+  .swap .alts-list { margin-top:8px; }
+  .ladder { display:grid; gap:6px; }
+  .ladder-row { display:grid; grid-template-columns:78px 1fr; gap:8px; font-size:12px; color:var(--text2); line-height:1.45; padding:7px 10px; border-radius:6px; background:var(--surface2); }
+  .ladder-row b { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.08em; color:var(--accent); font-weight:500; }
+  .ladder-rule { font-size:12px; color:var(--text); padding:6px 2px 0; }
   .opt-pill { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); border:1px dashed var(--border2); padding:2px 7px; border-radius:4px; white-space:nowrap; }
   .pat-pill { font-family:'DM Mono',monospace; font-size:9px; color:var(--text2); background:var(--surface3); border:1px solid var(--border2); padding:2px 7px; border-radius:4px; white-space:nowrap; text-transform:uppercase; letter-spacing:.05em; }
   .block-toggle { font-size:14px; color:var(--muted); transition:transform .2s; margin-left:4px; }
   .block.open .block-toggle { transform:rotate(180deg); }
-  .block-body { display:none; padding:0 16px 14px; border-top:1px solid var(--border); }
+  .block-body { display:none; padding:10px 16px 14px; border-top:1px solid var(--border); }
   .block.open .block-body { display:block; }
 
   .alts-label { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.15em; margin:12px 0 7px; }
@@ -260,7 +286,9 @@
     .day-num-big { font-size:48px; }
     .day-title { font-size:26px; }
     .block-cat { display:none; }
-    .primary-sets { display:none; }
+    .primary-sets { white-space:normal; }
+    .block-header { gap:8px; padding:12px; }
+    .pat-pill { display:none; }
   }
 </style>
 </head>
@@ -956,16 +984,16 @@ const NEW_SLOTS = {
 const HYBRID_PLAN = {
   1:{ core:[['hua2','A'],['hua6','A'],['hua3','B'],['hua10','B'],['hua4','C'],['huacurl','C']],
       extra:[['huaohe','D'],['huacar','D'],['huadip','E',{sets:'3×8-10'}]] },
-  2:{ core:[['hla2','A'],['hlc1','B'],['hlpal','B'],['hllat','C'],['hlb7','C']],
-      extra:[['hllk','D',{sets:'3×6-8 · moderate · RPE ~7 · skip if the threshold run cooked your legs'}],['hlb8','D'],['hlb3','E',{sets:'3×8-12 · moderate'}],
-            ['hlplyo','F',{sets:'2×15-20 · or 2×45 sec rope · low intensity on tired legs',
-              alts:[{name:'Jump Rope',sets:'2×45 sec'},{name:'Single-Leg Jump Rope',sets:'2×20 sec each'},{name:'Ankle Hops',sets:'2×20'},{name:'Single-Leg Pogos',sets:'2×8 each'}]}]] },
+  2:{ core:[['hlplyo','P',{cat:'Plyo · LOW', sets:'2×45 sec rope or 2×15-20 pogos · low only on tired legs',
+              alts:[{name:'Jump Rope',sets:'2×45 sec'},{name:'Single-Leg Jump Rope',sets:'2×20 sec each'},{name:'Ankle Hops',sets:'2×20'},{name:'Single-Leg Pogos',sets:'2×8 each'}]}],
+            ['hla2','A'],['hlc1','B'],['hlpal','B'],['hllat','C'],['hlb7','C']],
+      extra:[['hllk','D',{sets:'3×6-8 · moderate · RPE ~7 · skip if the threshold run cooked your legs'}],['hlb8','D'],['hlb3','E',{sets:'3×8-12 · moderate'}]] },
   3:{ core:[['hub4','A'],['hub3','A'],['hub9','B'],
             ['hub2','B',{primary:'Lat Pulldown',sets:'3×10-12 · neutral grip · micro-load with Platemates',
               alts:[{name:'Pull-Ups',sets:'3×AMRAP'},{name:'Neutral-Grip Pull-Up',sets:'3×8'},{name:'Single-Arm Cable Pulldown',sets:'3×10 each'},{name:'Chin-Ups',sets:'3×AMRAP'}]}],
             ['hubtri','C'],['hublat','C']],
       extra:[['hubham','D'],['hub6','D'],['hubfly','E'],['hubup','E',{sets:'3×10-15 · wide grip or rope · elbows to shoulder height only'}],['hub8','F']] },
-  4:{ core:[['hla1','A',{sets:'3×3-5 · full recovery · power, land soft'}],['hlslh','A'],
+  4:{ core:[['hla1','A',{cat:'Plyo · LOW + MOD', sets:'rope/pogos 1-2 min, then 3×3-5 box jumps · land soft'}],['hlslh','A'],
             ['hlb2','B',{sets:'3×5 · main lift · RPE 7-8 · no failure'}],
             ['hlrdl','C'],['hla7','C',{sets:'3×10-15 · heavy · hold a DB · soleus, the runner’s calf'}],
             ['hlb4','D'],['hla6','D']],
@@ -985,7 +1013,8 @@ const PLYO_LADDER = {
     'Stop the set when contacts get slow or loud — quality over volume.',
   ],
 };
-const HYBRID_TITLES = { 2:{ plyoLadder:PLYO_LADDER }, 3:{ title:'Upper 2 — Volume', tag:'Upper · Volume' }, 4:{ plyoLadder:PLYO_LADDER } };
+const HYBRID_TITLES = { 3:{ title:'Upper 2 — Volume', tag:'Upper · Volume' } };
+const LADDER_SLOTS = new Set(['hla1','hlplyo']);
 const SLOT_LIB = Object.fromEntries(DAYS_HYROX.flatMap(d => d.slots || []).map(x => [x.id, x]));
 Object.assign(SLOT_LIB, Object.fromEntries(Object.entries(NEW_SLOTS).map(([id, x]) => [id, {id, ...x}])));
 const DAYS_HYBRID = DAYS_HYROX.map(d => {
@@ -997,6 +1026,7 @@ const DAYS_HYBRID = DAYS_HYROX.map(d => {
     const mates = rows.filter(r => r[1] === g), L = String.fromCharCode(65 + groups.indexOf(g));
     const slot = {...base, ...(ov||{}), ...(extra ? {extra:true} : {})};
     if (mates.length > 1) { slot.ss = L; slot.idx = L + (mates.findIndex(r => r[0] === id) + 1); } else slot.idx = L;
+    if (LADDER_SLOTS.has(id)) slot.ladder = d.id === 2 ? 'tue' : 'thu';
     return slot;
   });
   return {...d, ...(HYBRID_TITLES[d.id]||{}), slots};
@@ -1007,7 +1037,7 @@ const PROGRAMS = { fb: DAYS_FB, ulul: DAYS_ULUL, hyrox: DAYS_HYBRID };
 const SUBTITLES = {
   fb: 'ABC · 3 full-body days (squat / hinge / unilateral). Strength leads; running is easy support. Log weights — history shows on every exercise.',
   ulul: 'ULUL · 4 days, Upper/Lower ×2 with running baked in. Heavy once, light-variation once per pattern. ⚡ = superset. Shares logged history with the 3× program.',
-  hyrox: 'Hybrid Week · Mon Upper 1 (strength) · Tue threshold + Lower A (deadlift focus) · Wed Upper 2 (volume) · Thu Lower B (squat focus) · Fri HYROX · Sat off · Sun long run. Each day lists its core lifts first; anything tagged “+ if time” is a nice-to-have. Tap ⏱ Express to see only the core (~40-45 min). Upper days hit all 4 compound patterns; small muscles split — Mon biceps + rear delts, Wed triceps + side delts. ⚡ pairs go back to back.'
+  hyrox: 'Mon upper · Tue deadlift · Wed upper · Thu squat · Fri HYROX · Sun long run. Core lifts first; ⏱ Express hides “+ if time”.'
 };
 
 // ─────────────────────────────────────────
@@ -1051,7 +1081,7 @@ function switchProgram(key, btn) {
 
 const THEMES = [['volt','Volt','#e8ff47','#0d0d0d'],['midnight','Midnight','#7aa2ff','#0b1020'],['sage','Sage','#a3d9a5','#111613'],['paper','Paper','#c4552d','#f5f1ea']];
 function renderThemes() {
-  const cur = document.documentElement.dataset.theme || 'volt';
+  const cur = document.documentElement.dataset.theme || 'paper';
   document.getElementById('theme-row').innerHTML = '<span class="tr-label">Theme</span>' + THEMES.map(([k,n,a,b]) =>
     `<button class="theme-dot${k===cur?' active':''}" title="${n}" aria-label="${n} theme" onclick="setTheme('${k}')"><span style="background:linear-gradient(135deg,${b} 50%,${a} 50%)"></span></button>`).join('');
 }
@@ -1062,10 +1092,36 @@ function setTheme(k) {
 }
 document.addEventListener('DOMContentLoaded', renderThemes);
 
+function todayKey() { const d = new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+function loadDone() {
+  try { const r = JSON.parse(localStorage.getItem('hybrid-done')||'{}'); return r.date === todayKey() ? r : {date:todayKey(), ids:{}}; }
+  catch(e) { return {date:todayKey(), ids:{}}; }
+}
+function isDone(id) { return !!loadDone().ids[ACTIVE+':'+id]; }
+function setDone(id, on) {
+  const r = loadDone(); const k = ACTIVE+':'+id;
+  if (on) r.ids[k] = 1; else delete r.ids[k];
+  try { localStorage.setItem('hybrid-done', JSON.stringify(r)); } catch(e) {}
+  const b = document.getElementById('block-'+id);
+  if (b) { b.classList.toggle('done', on); b.classList.toggle('open', !on); }
+  updateProgress();
+}
+function toggleDone(e, id) { e.stopPropagation(); setDone(id, !isDone(id)); }
+function updateProgress() {
+  document.querySelectorAll('.day-progress').forEach(p => {
+    const panel = p.closest('.day-panel');
+    const blocks = [...panel.querySelectorAll('.block')].filter(b => !(document.body.classList.contains('express') && b.classList.contains('is-extra')));
+    const n = blocks.filter(b => b.classList.contains('done')).length;
+    p.querySelector('.dp-count').textContent = n === blocks.length && n ? `All ${n} done ✓` : `${n} / ${blocks.length}`;
+    p.querySelector('.dp-fill').style.width = blocks.length ? (100*n/blocks.length)+'%' : '0';
+  });
+}
+
 function toggleExpress() {
   const on = !document.body.classList.contains('express');
   document.body.classList.toggle('express', on);
   try { localStorage.setItem('hybrid-express', on ? '1' : '0'); } catch(e) {}
+  updateProgress();
 }
 try { if (localStorage.getItem('hybrid-express') === '1') document.body.classList.add('express'); } catch(e) {}
 
@@ -1077,21 +1133,21 @@ function saveDB() {
 // RENDER
 // ─────────────────────────────────────────
 function renderWorkout() {
+  setTimeout(updateProgress, 0);
   document.getElementById('workout-content').innerHTML = DAYS.map(day => {
     let inner = '';
-    if (day.warmup) inner += `<div class="warmup-strip"><div class="ws-label">Warm-Up · every session · ~5 min</div>${day.warmup.map(w=>`<div class="ws-item"><span class="alt-dot"></span>${w}</div>`).join('')}</div>`;
-    if (day.plyoLadder) inner += `<div class="note-strip"><div class="ws-label">Plyo Ladder · 1 LOW + either MODERATE or HIGH</div>${day.plyoLadder.levels.map(([lv,ex,why,dose])=>`<div class="ws-item"><span class="alt-dot"></span><span><b>${lv}</b> — ${ex} · <i>${why}</i> · ${dose}</span></div>`).join('')}${day.plyoLadder.rules.map(r=>`<div class="ws-item"><span class="alt-dot"></span>${r}</div>`).join('')}</div>`;
-    if (day.restNote) inner += `<div class="note-strip"><div class="ws-label">Rest &amp; Pacing</div>${day.restNote.map(n=>`<div class="ws-item"><span class="alt-dot"></span>${n}</div>`).join('')}</div>`;
+    if (day.slots && day.slots.length) inner += `<div class="day-progress" id="prog-${day.id}"><div class="dp-row"><span>Progress</span><b class="dp-count">0 / 0</b></div><div class="dp-track"><div class="dp-fill"></div></div></div>`;
+    if (day.warmup) inner += `<details class="more"><summary>Warm-up · ${day.warmup.length} drills · ~5 min</summary><div class="more-body">${day.warmup.map(w=>`<div class="ws-item"><span class="alt-dot"></span>${w}</div>`).join('')}</div></details>`;
+    if (day.restNote) inner += `<details class="more"><summary>Rest &amp; pacing</summary><div class="more-body">${day.restNote.map(n=>`<div class="ws-item"><span class="alt-dot"></span>${n}</div>`).join('')}</div></details>`;
     if (day.slots && day.slots.some(x=>x.extra)) {
-      const core = day.slots.filter(x=>!x.extra).length, extra = day.slots.length - core;
-      inner += `<div class="note-strip express-strip"><div><div class="ws-label">⏱ Short on time?</div>${[
-        `Express shows only the ${core} core lifts (~40 min) and hides the ${extra} marked “+ if time”.`,
-        'Decide before the first set — under 45 min, switch Express on now rather than quitting halfway.',
-        'Never cut the main lift. It is the strength driver; everything after it is negotiable.',
-        'Keep the supersets back to back — that is where most of the time saving comes from.',
-        'Still short? Drop the last block next, not a set from the main lift.',
-        'Move the 2-min extras (tib raises, face pulls, dead bugs) into the warm-up or an easy-run day.'
-      ].map(t=>`<div class="ws-item"><span class="alt-dot"></span>${t}</div>`).join('')}</div><button class="express-btn" onclick="toggleExpress()">⏱ Express</button></div>`;
+      const core = day.slots.filter(x=>!x.extra).length;
+      inner += `<div class="express-bar"><span class="eb-text">Short on time? Core ${core} only</span><button class="express-btn" onclick="toggleExpress()">⏱ Express</button></div>`;
+      inner += `<details class="more"><summary>Short-on-time rules</summary><div class="more-body">${[
+        'Decide before the first set — under 45 min, switch Express on.',
+        'Never cut the main lift.',
+        'Keep supersets back to back.',
+        'Still short? Drop the last block, not a main-lift set.',
+      ].map(t=>`<div class="ws-item"><span class="alt-dot"></span>${t}</div>`).join('')}</div></details>`;
     }
     if (day.runCards) inner += day.runCards.map(renderRunCard).join('');
     if (day.slots) inner += `<div class="blocks">${day.slots.map(renderBlock).join('')}</div>`;
@@ -1101,9 +1157,10 @@ function renderWorkout() {
         <div class="day-info">
           <div class="day-label-sm">${day.subtitle}</div>
           <div class="day-title">${day.title}</div>
-          <p class="day-desc">${day.desc}</p>
+
         </div>
       </div>
+      ${day.desc?`<details class="more"><summary>Why this day</summary><div class="more-body"><p class="day-desc">${day.desc}</p></div></details>`:''}
       ${inner}
     </div>`;
   }).join('');
@@ -1137,7 +1194,9 @@ function renderBlock(slot) {
   const altItems = slot.alts.map(a =>
     `<div class="alt-item"><div class="alt-dot"></div><span class="alt-name">${a.name}</span><span class="alt-sets">${a.sets}</span></div>`
   ).join('');
-  return `<div class="block is-primary-day${slot.extra?' is-extra':''}" id="block-${slot.id}">
+  const done = isDone(slot.id);
+  const ladder = slot.ladder ? `<div class="ladder">${PLYO_LADDER.levels.map(([lv,ex,why,dose])=>`<div class="ladder-row"><b>${lv}</b><span>${ex} · ${dose}</span></div>`).join('')}<div class="ladder-rule">${slot.ladder==='tue' ? 'Today: LOW only — legs are tired from threshold.' : 'Today: 1 LOW + either MODERATE or HIGH, never both. HIGH starts January.'}</div></div>` : '';
+  return `<div class="block is-primary-day${slot.extra?' is-extra':''}${done?' done':' open'}" id="block-${slot.id}">
     <div class="block-header" onclick="toggleBlock(this)">
       <span class="block-index">${slot.idx}</span>
       <span class="block-cat">${slot.cat}</span>${slot.ss?`<span class="ss-pill">⚡${slot.ss}</span>`:''}${slot.opt?'<span class="opt-pill">home/opt</span>':''}${slot.extra?'<span class="extra-pill">+ if time</span>':''}
@@ -1146,10 +1205,11 @@ function renderBlock(slot) {
         <button class="log-btn" onclick="openLog(event,'${slot.id}')">+ Log</button>
         ${prHtml}
       </div>
-      <span class="block-toggle">▾</span>
+      <button class="done-btn" title="Mark done" onclick="toggleDone(event,'${slot.id}')">✓</button>
     </div>
     <div class="block-body">
-      ${slot.alts.length ? `<div class="alts-label">Alternatives</div><div class="alts-list">${altItems}</div>` : ''}
+      ${ladder}
+      ${slot.alts.length ? `<details class="swap"><summary>Swap exercise ＋</summary><div class="alts-list">${altItems}</div></details>` : ''}
       <div class="block-history" id="hist-${slot.id}"></div>
     </div>
   </div>`;
@@ -1159,18 +1219,18 @@ function renderRunCard(c) {
   const statsHtml = c.stats.map(s=>`<span class="run-stat">${s}</span>`).join('');
   let altsHtml = '';
   if (c.structuredAlts && c.structuredAlts.length) {
-    altsHtml = `<div style="margin-top:12px"><div class="alts-label">Formats</div>${
+    altsHtml = `<details class="swap"><summary>Formats ＋</summary><div style="margin-top:8px">${
       c.structuredAlts.map(a=>`<div class="run-alt-item"><span class="run-alt-title">${a.title}</span><span class="run-alt-detail">${a.detail}</span></div>`).join('')
-    }</div>`;
+    }</div></details>`;
   } else if (c.alts && c.alts.length) {
-    altsHtml = `<div style="margin-top:12px"><div class="alts-label">Circuit</div><div class="alts-list">${
+    altsHtml = `<details class="swap"><summary>Details ＋</summary><div class="alts-list">${
       c.alts.map(a=>`<div class="alt-item"><div class="alt-dot"></div><span>${a}</span></div>`).join('')
-    }</div></div>`;
+    }</div></details>`;
   }
   return `<div class="run-card">
     <div class="run-card-title">${c.title}</div>
     ${statsHtml?`<div class="run-details">${statsHtml}</div>`:''}
-    ${c.desc?`<p class="run-desc">${c.desc}</p>`:''}
+    ${c.desc?`<details class="swap"><summary>Notes ＋</summary><p class="run-desc" style="margin-top:8px">${c.desc}</p></details>`:''}
     ${altsHtml}
   </div>`;
 }
@@ -1276,6 +1336,7 @@ function saveLog() {
   refreshSlotBadge(currentSlotId);
   refreshSlotHistory(currentSlotId);
   closeModal();
+  setDone(currentSlotId, true);
   showToast(`Saved: ${exName} ✓`);
 }
 
