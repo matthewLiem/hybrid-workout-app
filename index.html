@@ -1016,7 +1016,14 @@ function renderWorkout() {
     if (day.restNote) inner += `<div class="note-strip"><div class="ws-label">Rest &amp; Pacing</div>${day.restNote.map(n=>`<div class="ws-item"><span class="alt-dot"></span>${n}</div>`).join('')}</div>`;
     if (day.slots && day.slots.some(x=>x.extra)) {
       const core = day.slots.filter(x=>!x.extra).length, extra = day.slots.length - core;
-      inner += `<div class="note-strip express-strip"><div><div class="ws-label">⏱ Short on time?</div><div class="ws-item"><span class="alt-dot"></span>Express shows only the ${core} core lifts (~40 min) and hides the ${extra} marked “+ if time”. Run the blocks in order; if the clock is still tight, cut the last block before you cut a set from the main lift.</div></div><button class="express-btn" onclick="toggleExpress()">⏱ Express</button></div>`;
+      inner += `<div class="note-strip express-strip"><div><div class="ws-label">⏱ Short on time?</div>${[
+        `Express shows only the ${core} core lifts (~40 min) and hides the ${extra} marked “+ if time”.`,
+        'Decide before the first set — under 45 min, switch Express on now rather than quitting halfway.',
+        'Never cut the main lift. It is the strength driver; everything after it is negotiable.',
+        'Keep the supersets back to back — that is where most of the time saving comes from.',
+        'Still short? Drop the last block next, not a set from the main lift.',
+        'Move the 2-min extras (tib raises, face pulls, dead bugs) into the warm-up or an easy-run day.'
+      ].map(t=>`<div class="ws-item"><span class="alt-dot"></span>${t}</div>`).join('')}</div><button class="express-btn" onclick="toggleExpress()">⏱ Express</button></div>`;
     }
     if (day.runCards) inner += day.runCards.map(renderRunCard).join('');
     if (day.slots) inner += `<div class="blocks">${day.slots.map(renderBlock).join('')}</div>`;
