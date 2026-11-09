@@ -77,6 +77,12 @@
   .log-btn:hover { background:var(--accent); color:#0d0d0d; }
   .pr-badge { font-family:'DM Mono',monospace; font-size:10px; color:var(--accent2); background:rgba(255,107,53,.12); padding:3px 8px; border-radius:4px; white-space:nowrap; }
   .ss-pill { font-family:'DM Mono',monospace; font-size:9px; color:#0d0d0d; background:var(--accent2); padding:2px 7px; border-radius:4px; white-space:nowrap; font-weight:600; }
+  .extra-pill { font-family:'DM Mono',monospace; font-size:9px; color:var(--accent3); border:1px dashed var(--accent3); padding:2px 7px; border-radius:4px; white-space:nowrap; }
+  .block.is-extra { opacity:.72; }
+  body.express .block.is-extra { display:none; }
+  .express-strip { display:flex; align-items:center; gap:12px; justify-content:space-between; flex-wrap:wrap; }
+  .express-btn { font-family:'DM Mono',monospace; font-size:11px; padding:8px 14px; border-radius:6px; border:1px solid var(--accent3); background:transparent; color:var(--accent3); cursor:pointer; white-space:nowrap; }
+  body.express .express-btn { background:var(--accent3); color:#000; }
   .opt-pill { font-family:'DM Mono',monospace; font-size:9px; color:var(--muted); border:1px dashed var(--border2); padding:2px 7px; border-radius:4px; white-space:nowrap; }
   .pat-pill { font-family:'DM Mono',monospace; font-size:9px; color:#9aa0a6; background:var(--surface3); border:1px solid var(--border2); padding:2px 7px; border-radius:4px; white-space:nowrap; text-transform:uppercase; letter-spacing:.05em; }
   .block-toggle { font-size:14px; color:var(--muted); transition:transform .2s; margin-left:4px; }
@@ -922,10 +928,13 @@ const SHORT_ADD = {
   hla6:   [{ id:'hlb3', opt:true, cat:'Hinge / Glute', primary:'Barbell Hip Thrust', sets:'3×8-12 · moderate · optional',
              alts:[{name:'Single-Leg Hip Thrust',sets:'3×10 each'},{name:'Cable Pull-Through',sets:'3×12'},{name:'Barbell Glute Bridge',sets:'3×10'}] }],
 };
+// Express mode: these are the "+ if time" lifts. Hiding them leaves the 5 core lifts per day (~40 min).
+const SHORT_EXTRA = new Set(['hua6','huaohe','hlb8','hllk','hubtri','hublat','hlb6','hlb8t','hlb3']);
 const DAYS_SHORT = DAYS_HYROX.map(d => {
   if (!d.slots || !d.slots.length) return d;
   const slots = d.slots.filter(x => !SHORT_CUT.has(x.id))
-    .flatMap(x => [{...x, ...(SHORT_EDIT[x.id]||{})}, ...(SHORT_ADD[x.id]||[])]);
+    .flatMap(x => [{...x, ...(SHORT_EDIT[x.id]||{})}, ...(SHORT_ADD[x.id]||[])])
+    .map(x => SHORT_EXTRA.has(x.id) ? {...x, extra:true} : x);
   const order = [...new Set(slots.map(x => x.ss || x.id))];
   slots.sort((a,b) => order.indexOf(a.ss||a.id) - order.indexOf(b.ss||b.id));
   // relabel blocks A, B, C… and drop the superset tag from anything left alone
@@ -941,7 +950,7 @@ let ACTIVE = 'hyrox';
 let DAYS = DAYS_HYROX;
 const PROGRAMS = { fb: DAYS_FB, ulul: DAYS_ULUL, hyrox: DAYS_HYROX, short: DAYS_SHORT };
 const SUBTITLES = {
-  short: 'Condensed 4-Day · same week as Hybrid Week, trimmed to 6-7 lifts a day for ~45-55 min sessions. Main lifts, pull-ups, biceps on both upper days, a hinge and single-leg work on both lower days are all kept. Cut: dips, farmers carry, pogo primer, cable fly, rear delt fly, upright row, dead hang, bent-knee calf; squat drops to 3×5. Pull-ups Mon, lat pulldown Wed. Overhead triceps ext added Mon; hip thrust moves to Thu as optional. Shares logged history with Hybrid Week.',
+  short: 'Condensed 4-Day · same week as Hybrid Week, trimmed to 6-7 lifts a day for ~45-55 min sessions. Main lifts, pull-ups, biceps on both upper days, a hinge and single-leg work on both lower days are all kept. Cut: dips, farmers carry, pogo primer, cable fly, rear delt fly, upright row, dead hang, bent-knee calf; squat drops to 3×5. Pull-ups Mon, lat pulldown Wed. Overhead triceps ext added Mon; hip thrust moves to Thu as optional. Short on time? Tap ⏱ Express on any day to show only the 5 core lifts (~40 min). Shares logged history with Hybrid Week.',
   fb: 'ABC · 3 full-body days (squat / hinge / unilateral). Strength leads; running is easy support. Log weights — history shows on every exercise.',
   ulul: 'ULUL · 4 days, Upper/Lower ×2 with running baked in. Heavy once, light-variation once per pattern. ⚡ = superset. Shares logged history with the 3× program.',
   hyrox: 'Hybrid Week · Upper 1 (strength, push) · Threshold + Lower A (deadlift) · Upper 2 (volume, pull) · Lower B (squat) · HYROX Friday · Saturday off · Sunday long. Run first on every double. Deadlift sits on Tuesday because a threshold run mainly tires the quads, so the squat gets the fresher Thursday slot. Blocks run in superset order — ⚡A pairs go back to back. opt = drop it when the clock is tight.'
@@ -986,6 +995,13 @@ function switchProgram(key, btn) {
   if (document.getElementById('view-progress').classList.contains('active')) renderProgress();
 }
 
+function toggleExpress() {
+  const on = !document.body.classList.contains('express');
+  document.body.classList.toggle('express', on);
+  try { localStorage.setItem('hybrid-express', on ? '1' : '0'); } catch(e) {}
+}
+try { if (localStorage.getItem('hybrid-express') === '1') document.body.classList.add('express'); } catch(e) {}
+
 function saveDB() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); } catch(e) {}
 }
@@ -998,6 +1014,10 @@ function renderWorkout() {
     let inner = '';
     if (day.warmup) inner += `<div class="warmup-strip"><div class="ws-label">Warm-Up · every session · ~5 min</div>${day.warmup.map(w=>`<div class="ws-item"><span class="alt-dot"></span>${w}</div>`).join('')}</div>`;
     if (day.restNote) inner += `<div class="note-strip"><div class="ws-label">Rest &amp; Pacing</div>${day.restNote.map(n=>`<div class="ws-item"><span class="alt-dot"></span>${n}</div>`).join('')}</div>`;
+    if (day.slots && day.slots.some(x=>x.extra)) {
+      const core = day.slots.filter(x=>!x.extra).length, extra = day.slots.length - core;
+      inner += `<div class="note-strip express-strip"><div><div class="ws-label">⏱ Short on time?</div><div class="ws-item"><span class="alt-dot"></span>Express shows only the ${core} core lifts (~40 min) and hides the ${extra} marked “+ if time”. Run the blocks in order; if the clock is still tight, cut the last block before you cut a set from the main lift.</div></div><button class="express-btn" onclick="toggleExpress()">⏱ Express</button></div>`;
+    }
     if (day.runCards) inner += day.runCards.map(renderRunCard).join('');
     if (day.slots) inner += `<div class="blocks">${day.slots.map(renderBlock).join('')}</div>`;
     return `<div class="day-panel${day.id===1?' active':''}" id="day${day.id}">
@@ -1042,10 +1062,10 @@ function renderBlock(slot) {
   const altItems = slot.alts.map(a =>
     `<div class="alt-item"><div class="alt-dot"></div><span class="alt-name">${a.name}</span><span class="alt-sets">${a.sets}</span></div>`
   ).join('');
-  return `<div class="block is-primary-day" id="block-${slot.id}">
+  return `<div class="block is-primary-day${slot.extra?' is-extra':''}" id="block-${slot.id}">
     <div class="block-header" onclick="toggleBlock(this)">
       <span class="block-index">${slot.idx}</span>
-      <span class="block-cat">${slot.cat}</span>${slot.ss?`<span class="ss-pill">⚡${slot.ss}</span>`:''}${slot.opt?'<span class="opt-pill">home/opt</span>':''}
+      <span class="block-cat">${slot.cat}</span>${slot.ss?`<span class="ss-pill">⚡${slot.ss}</span>`:''}${slot.opt?'<span class="opt-pill">home/opt</span>':''}${slot.extra?'<span class="extra-pill">+ if time</span>':''}
       <span class="block-name"><span class="primary-pill">${slot.primary}</span><span class="pat-pill">${patternOf(slot.cat)}</span><span class="primary-sets">${slot.sets}</span></span>
       <div class="block-actions">
         <button class="log-btn" onclick="openLog(event,'${slot.id}')">+ Log</button>
