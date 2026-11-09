@@ -242,7 +242,6 @@
   <p class="subtitle" id="subtitle"></p>
   <div class="header-nav" id="program-nav">
     <button class="nav-btn prog-btn active" onclick="switchProgram('hyrox',this)">Hybrid Week</button>
-    <button class="nav-btn prog-btn" onclick="switchProgram('short',this)">Condensed 4×</button>
     <button class="nav-btn prog-btn" onclick="switchProgram('fb',this)">3× Full Body</button>
     <button class="nav-btn prog-btn" onclick="switchProgram('ulul',this)">4× ULUL</button>
   </div>
@@ -909,51 +908,54 @@ const DAYS_HYROX = [
     ]
   },
 ];
-// CONDENSED 4-DAY — derived from Hybrid Week so the two never drift apart.
-// Same slot ids and exercise names, so logged history is shared.
-const SHORT_CUT = new Set(['huadip','huacar','hlplyo','hlb3','hubfly','hub6','hubup','hub8','hla7']);
-const SHORT_EDIT = {
-  hllk:  { opt:false, sets:'3×6-8 · moderate · RPE ~7 · first to cut if legs are cooked' },
-  hlb2:  { sets:'3×5 · main lift · RPE 7-8 · no failure' },
-  hub2:  { primary:'Lat Pulldown', sets:'3×10-12 · neutral grip · micro-load with Platemates',
-           alts:[{name:'Pull-Ups',sets:'3×AMRAP'},{name:'Neutral-Grip Pull-Up',sets:'3×8'},{name:'Single-Arm Cable Pulldown',sets:'3×10 each'},{name:'Chin-Ups',sets:'3×AMRAP'}] },
-  hubtri:{ ss:'C' },
-  hublat:{ ss:'C' },
-  hubham:{ ss:'D' },
+// HYBRID WEEK — core-first layout.
+// Each day lists its CORE lifts first, then "+ if time" nice-to-haves (extra:true; hidden by ⏱ Express).
+// Upper: all 4 compound patterns both days; small muscles split — Mon biceps + rear delts, Wed triceps + side delts.
+// Lower: one heavy pattern per day — Tue deadlift focus, Thu squat focus — plus single-leg work both days.
+// Built from the slot library above, so slot ids / exercise names (and logged history) are unchanged.
+const NEW_SLOTS = {
+  huaohe:{ cat:'Triceps', primary:'Overhead Triceps Ext', sets:'3×10-12 · cable rope or one DB · long-head stretch',
+           alts:[{name:'Skull Crushers',sets:'3×8-10'},{name:'Triceps Pushdown',sets:'3×10-15'},{name:'Weighted Dip',sets:'3×8-10'}] },
+  hlhc:  { cat:'Hamstring Curl', primary:'Cable Leg Curl', sets:'3×10-15 · knee-flexion hamstring work the hinges miss',
+           alts:[{name:'Slider Leg Curl',sets:'3×10-12'},{name:'Nordic Curl',sets:'3×4-6'},{name:'Swiss Ball Leg Curl',sets:'3×12'}] },
 };
-// Extra slots inserted after an existing slot id (same exercise names as elsewhere, so history carries over)
-const SHORT_ADD = {
-  huacurl:[{ id:'huaohe', ss:'D', cat:'Triceps', primary:'Overhead Triceps Ext', sets:'3×10-12 · cable rope or one DB · long-head stretch',
-             alts:[{name:'Skull Crushers',sets:'3×8-10'},{name:'Triceps Pushdown',sets:'3×10-15'},{name:'Weighted Dip',sets:'3×8-10'}] }],
-  hla6:   [{ id:'hlb3', opt:true, cat:'Hinge / Glute', primary:'Barbell Hip Thrust', sets:'3×8-12 · moderate · optional',
-             alts:[{name:'Single-Leg Hip Thrust',sets:'3×10 each'},{name:'Cable Pull-Through',sets:'3×12'},{name:'Barbell Glute Bridge',sets:'3×10'}] }],
+// [slot id, superset group, overrides]; groups are relabelled A, B, C… in order
+const HYBRID_PLAN = {
+  1:{ core:[['hua2','A'],['hua6','A'],['hua3','B'],['hua10','B'],['hua4','C'],['huacurl','C']],
+      extra:[['huaohe','D'],['huacar','D'],['huadip','E',{sets:'3×8-10'}]] },
+  2:{ core:[['hla2','A'],['hlc1','B'],['hlpal','B'],['hllat','C'],['hlb7','C']],
+      extra:[['hllk','D',{sets:'3×6-8 · moderate · RPE ~7 · skip if the threshold run cooked your legs'}],['hlb8','D'],['hlb3','E',{sets:'3×8-12 · moderate'}],['hlplyo','F']] },
+  3:{ core:[['hub4','A'],['hub3','A'],['hub9','B'],
+            ['hub2','B',{primary:'Lat Pulldown',sets:'3×10-12 · neutral grip · micro-load with Platemates',
+              alts:[{name:'Pull-Ups',sets:'3×AMRAP'},{name:'Neutral-Grip Pull-Up',sets:'3×8'},{name:'Single-Arm Cable Pulldown',sets:'3×10 each'},{name:'Chin-Ups',sets:'3×AMRAP'}]}],
+            ['hubtri','C'],['hublat','C']],
+      extra:[['hubham','D'],['hub6','D'],['hubfly','E'],['hubup','E',{sets:'3×10-15 · wide grip or rope · elbows to shoulder height only'}],['hub8','F']] },
+  4:{ core:[['hla1','A'],['hlb2','B',{sets:'3×5 · main lift · RPE 7-8 · no failure'}],['hlrdl','C'],['hlb4','D'],['hla6','D']],
+      extra:[['hlhc','E'],['hla7','E',{sets:'3×12-15'}],['hlb6','F'],['hlb8t','F'],['hlb3','G',{sets:'3×8-12 · moderate'}]] },
 };
-// Express mode: these are the "+ if time" lifts. Hiding them leaves the 5 core lifts per day (~40 min).
-const SHORT_EXTRA = new Set(['hua6','huaohe','hlb8','hllk','hubtri','hublat','hlb6','hlb8t','hlb3']);
-const DAYS_SHORT = DAYS_HYROX.map(d => {
-  if (!d.slots || !d.slots.length) return d;
-  const slots = d.slots.filter(x => !SHORT_CUT.has(x.id))
-    .flatMap(x => [{...x, ...(SHORT_EDIT[x.id]||{})}, ...(SHORT_ADD[x.id]||[])])
-    .map(x => SHORT_EXTRA.has(x.id) ? {...x, extra:true} : x);
-  const order = [...new Set(slots.map(x => x.ss || x.id))];
-  slots.sort((a,b) => order.indexOf(a.ss||a.id) - order.indexOf(b.ss||b.id));
-  // relabel blocks A, B, C… and drop the superset tag from anything left alone
-  const groups = [...new Set(slots.map(x => x.ss || x.id))];
-  return {...d, slots: slots.map(x => {
-    const g = x.ss || x.id, L = String.fromCharCode(65 + groups.indexOf(g));
-    const mates = slots.filter(y => (y.ss || y.id) === g);
-    if (mates.length < 2) { const {ss, ...rest} = x; return {...rest, idx:L}; }
-    return {...x, ss:L, idx:L + (mates.indexOf(x) + 1)};
-  })};
+const HYBRID_TITLES = { 3:{ title:'Upper 2 — Volume', tag:'Upper · Volume' } };
+const SLOT_LIB = Object.fromEntries(DAYS_HYROX.flatMap(d => d.slots || []).map(x => [x.id, x]));
+Object.assign(SLOT_LIB, Object.fromEntries(Object.entries(NEW_SLOTS).map(([id, x]) => [id, {id, ...x}])));
+const DAYS_HYBRID = DAYS_HYROX.map(d => {
+  const plan = HYBRID_PLAN[d.id]; if (!plan) return d;
+  const rows = [...plan.core.map(([id,g,ov]) => [id, g, ov, false]), ...plan.extra.map(([id,g,ov]) => [id, g, ov, true])];
+  const groups = [...new Set(rows.map(r => r[1]))];
+  const slots = rows.map(([id, g, ov, extra]) => {
+    const {opt, ss, idx, ...base} = SLOT_LIB[id];
+    const mates = rows.filter(r => r[1] === g), L = String.fromCharCode(65 + groups.indexOf(g));
+    const slot = {...base, ...(ov||{}), ...(extra ? {extra:true} : {})};
+    if (mates.length > 1) { slot.ss = L; slot.idx = L + (mates.findIndex(r => r[0] === id) + 1); } else slot.idx = L;
+    return slot;
+  });
+  return {...d, ...(HYBRID_TITLES[d.id]||{}), slots};
 });
 let ACTIVE = 'hyrox';
-let DAYS = DAYS_HYROX;
-const PROGRAMS = { fb: DAYS_FB, ulul: DAYS_ULUL, hyrox: DAYS_HYROX, short: DAYS_SHORT };
+let DAYS = DAYS_HYBRID;
+const PROGRAMS = { fb: DAYS_FB, ulul: DAYS_ULUL, hyrox: DAYS_HYBRID };
 const SUBTITLES = {
-  short: 'Condensed 4-Day · same week as Hybrid Week, trimmed to 6-7 lifts a day for ~45-55 min sessions. Main lifts, pull-ups, biceps on both upper days, a hinge and single-leg work on both lower days are all kept. Cut: dips, farmers carry, pogo primer, cable fly, rear delt fly, upright row, dead hang, bent-knee calf; squat drops to 3×5. Pull-ups Mon, lat pulldown Wed. Overhead triceps ext added Mon; hip thrust moves to Thu as optional. Short on time? Tap ⏱ Express on any day to show only the 5 core lifts (~40 min). Shares logged history with Hybrid Week.',
   fb: 'ABC · 3 full-body days (squat / hinge / unilateral). Strength leads; running is easy support. Log weights — history shows on every exercise.',
   ulul: 'ULUL · 4 days, Upper/Lower ×2 with running baked in. Heavy once, light-variation once per pattern. ⚡ = superset. Shares logged history with the 3× program.',
-  hyrox: 'Hybrid Week · Upper 1 (strength, push) · Threshold + Lower A (deadlift) · Upper 2 (volume, pull) · Lower B (squat) · HYROX Friday · Saturday off · Sunday long. Run first on every double. Deadlift sits on Tuesday because a threshold run mainly tires the quads, so the squat gets the fresher Thursday slot. Blocks run in superset order — ⚡A pairs go back to back. opt = drop it when the clock is tight.'
+  hyrox: 'Hybrid Week · Mon Upper 1 (strength) · Tue threshold + Lower A (deadlift focus) · Wed Upper 2 (volume) · Thu Lower B (squat focus) · Fri HYROX · Sat off · Sun long run. Each day lists its core lifts first; anything tagged “+ if time” is a nice-to-have. Tap ⏱ Express to see only the core (~40-45 min). Upper days hit all 4 compound patterns; small muscles split — Mon biceps + rear delts, Wed triceps + side delts. ⚡ pairs go back to back.'
 };
 
 // ─────────────────────────────────────────
