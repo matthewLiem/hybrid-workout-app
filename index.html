@@ -914,6 +914,8 @@ const DAYS_HYROX = [
 // Lower: one heavy pattern per day — Tue deadlift focus, Thu squat focus — plus single-leg work both days.
 // Built from the slot library above, so slot ids / exercise names (and logged history) are unchanged.
 const NEW_SLOTS = {
+  hlslh: { cat:'Reactive Plyo', primary:'Single-Leg Hops', sets:'3×5 each · quick, stiff contacts · stop when contacts slow down',
+           alts:[{name:'Single-Leg Jump Rope',sets:'3×30 sec each'},{name:'Single-Leg Pogos',sets:'3×8 each'},{name:'Bounds',sets:'3×6 each'},{name:'Lateral Hops',sets:'3×6 each'},{name:'Depth Drop (stick the landing)',sets:'3×4 · January+'}] },
   huaohe:{ cat:'Triceps', primary:'Overhead Triceps Ext', sets:'3×10-12 · cable rope or one DB · long-head stretch',
            alts:[{name:'Skull Crushers',sets:'3×8-10'},{name:'Triceps Pushdown',sets:'3×10-15'},{name:'Weighted Dip',sets:'3×8-10'}] },
   hlhc:  { cat:'Hamstring Curl', primary:'Cable Leg Curl', sets:'3×10-15 · knee-flexion hamstring work the hinges miss',
@@ -924,14 +926,19 @@ const HYBRID_PLAN = {
   1:{ core:[['hua2','A'],['hua6','A'],['hua3','B'],['hua10','B'],['hua4','C'],['huacurl','C']],
       extra:[['huaohe','D'],['huacar','D'],['huadip','E',{sets:'3×8-10'}]] },
   2:{ core:[['hla2','A'],['hlc1','B'],['hlpal','B'],['hllat','C'],['hlb7','C']],
-      extra:[['hllk','D',{sets:'3×6-8 · moderate · RPE ~7 · skip if the threshold run cooked your legs'}],['hlb8','D'],['hlb3','E',{sets:'3×8-12 · moderate'}],['hlplyo','F']] },
+      extra:[['hllk','D',{sets:'3×6-8 · moderate · RPE ~7 · skip if the threshold run cooked your legs'}],['hlb8','D'],['hlb3','E',{sets:'3×8-12 · moderate'}],
+            ['hlplyo','F',{sets:'2×15-20 · or 2×45 sec rope · low intensity on tired legs',
+              alts:[{name:'Jump Rope',sets:'2×45 sec'},{name:'Single-Leg Jump Rope',sets:'2×20 sec each'},{name:'Ankle Hops',sets:'2×20'},{name:'Single-Leg Pogos',sets:'2×8 each'}]}]] },
   3:{ core:[['hub4','A'],['hub3','A'],['hub9','B'],
             ['hub2','B',{primary:'Lat Pulldown',sets:'3×10-12 · neutral grip · micro-load with Platemates',
               alts:[{name:'Pull-Ups',sets:'3×AMRAP'},{name:'Neutral-Grip Pull-Up',sets:'3×8'},{name:'Single-Arm Cable Pulldown',sets:'3×10 each'},{name:'Chin-Ups',sets:'3×AMRAP'}]}],
             ['hubtri','C'],['hublat','C']],
       extra:[['hubham','D'],['hub6','D'],['hubfly','E'],['hubup','E',{sets:'3×10-15 · wide grip or rope · elbows to shoulder height only'}],['hub8','F']] },
-  4:{ core:[['hla1','A'],['hlb2','B',{sets:'3×5 · main lift · RPE 7-8 · no failure'}],['hlrdl','C'],['hlb4','D'],['hla6','D']],
-      extra:[['hlhc','E'],['hla7','E',{sets:'3×12-15'}],['hlb6','F'],['hlb8t','F'],['hlb3','G',{sets:'3×8-12 · moderate'}]] },
+  4:{ core:[['hla1','A',{sets:'3×3-5 · full recovery · power, land soft'}],['hlslh','A'],
+            ['hlb2','B',{sets:'3×5 · main lift · RPE 7-8 · no failure'}],
+            ['hlrdl','C'],['hla7','C',{sets:'3×10-15 · heavy · hold a DB · soleus, the runner’s calf'}],
+            ['hlb4','D'],['hla6','D']],
+      extra:[['hlhc','E'],['hlb6','F'],['hlb8t','F'],['hlb3','G',{sets:'3×8-12 · moderate'}]] },
 };
 const HYBRID_TITLES = { 3:{ title:'Upper 2 — Volume', tag:'Upper · Volume' } };
 const SLOT_LIB = Object.fromEntries(DAYS_HYROX.flatMap(d => d.slots || []).map(x => [x.id, x]));
