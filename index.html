@@ -940,7 +940,21 @@ const HYBRID_PLAN = {
             ['hlb4','D'],['hla6','D']],
       extra:[['hlhc','E'],['hlb6','F'],['hlb8t','F'],['hlb3','G',{sets:'3×8-12 · moderate'}]] },
 };
-const HYBRID_TITLES = { 3:{ title:'Upper 2 — Volume', tag:'Upper · Volume' } };
+const PLYO_LADDER = {
+  levels:[
+    ['LOW','Jump rope (2- or 1-leg), pogos, ankle hops','tendon stiffness, springy contacts','50-100 contacts'],
+    ['MODERATE','Single-leg hops, bounds, lateral/skater hops, box jumps','single-leg power, horizontal force','30-60 contacts'],
+    ['HIGH','Depth drops → depth jumps, single-leg drop jumps','absorbing hard landings, max reactive strength','15-30 contacts · January+'],
+  ],
+  rules:[
+    'Always open with a LOW drill as the warm-up, then add at most one higher level.',
+    'Tue (after threshold, tired legs): LOW only — rope or pogos.',
+    'Thu (fresh legs): LOW + MODERATE — rope/pogos, then box jumps + single-leg hops. Rotate the moderate drill week to week.',
+    'HIGH replaces MODERATE, once a week max, on the fresh day only — start in the January running block, not before HYROX.',
+    'Stop the set when contacts get slow or loud — quality over volume.',
+  ],
+};
+const HYBRID_TITLES = { 2:{ plyoLadder:PLYO_LADDER }, 3:{ title:'Upper 2 — Volume', tag:'Upper · Volume' }, 4:{ plyoLadder:PLYO_LADDER } };
 const SLOT_LIB = Object.fromEntries(DAYS_HYROX.flatMap(d => d.slots || []).map(x => [x.id, x]));
 Object.assign(SLOT_LIB, Object.fromEntries(Object.entries(NEW_SLOTS).map(([id, x]) => [id, {id, ...x}])));
 const DAYS_HYBRID = DAYS_HYROX.map(d => {
@@ -1022,6 +1036,7 @@ function renderWorkout() {
   document.getElementById('workout-content').innerHTML = DAYS.map(day => {
     let inner = '';
     if (day.warmup) inner += `<div class="warmup-strip"><div class="ws-label">Warm-Up · every session · ~5 min</div>${day.warmup.map(w=>`<div class="ws-item"><span class="alt-dot"></span>${w}</div>`).join('')}</div>`;
+    if (day.plyoLadder) inner += `<div class="note-strip"><div class="ws-label">Plyo Ladder · pick LOW + one level up</div>${day.plyoLadder.levels.map(([lv,ex,why,dose])=>`<div class="ws-item"><span class="alt-dot"></span><b>${lv}</b> — ${ex} · <i>${why}</i> · ${dose}</div>`).join('')}${day.plyoLadder.rules.map(r=>`<div class="ws-item"><span class="alt-dot"></span>${r}</div>`).join('')}</div>`;
     if (day.restNote) inner += `<div class="note-strip"><div class="ws-label">Rest &amp; Pacing</div>${day.restNote.map(n=>`<div class="ws-item"><span class="alt-dot"></span>${n}</div>`).join('')}</div>`;
     if (day.slots && day.slots.some(x=>x.extra)) {
       const core = day.slots.filter(x=>!x.extra).length, extra = day.slots.length - core;
