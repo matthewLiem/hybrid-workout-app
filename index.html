@@ -236,6 +236,7 @@
   <p class="subtitle" id="subtitle"></p>
   <div class="header-nav" id="program-nav">
     <button class="nav-btn prog-btn active" onclick="switchProgram('hyrox',this)">Hybrid Week</button>
+    <button class="nav-btn prog-btn" onclick="switchProgram('short',this)">Condensed 4×</button>
     <button class="nav-btn prog-btn" onclick="switchProgram('fb',this)">3× Full Body</button>
     <button class="nav-btn prog-btn" onclick="switchProgram('ulul',this)">4× ULUL</button>
   </div>
@@ -902,10 +903,35 @@ const DAYS_HYROX = [
     ]
   },
 ];
+// CONDENSED 4-DAY — derived from Hybrid Week so the two never drift apart.
+// Same slot ids and exercise names, so logged history is shared.
+const SHORT_CUT = new Set(['huadip','huacar','hlplyo','hlb3','hubfly','hub6','hubup','hub8','hla7']);
+const SHORT_EDIT = {
+  hllk:  { opt:false, sets:'3×6-8 · moderate · RPE ~7 · first to cut if legs are cooked' },
+  hlb2:  { sets:'3×5 · main lift · RPE 7-8 · no failure' },
+  hubtri:{ ss:'C' },
+  hublat:{ ss:'C' },
+  hubham:{ ss:'D' },
+};
+const DAYS_SHORT = DAYS_HYROX.map(d => {
+  if (!d.slots || !d.slots.length) return d;
+  const slots = d.slots.filter(x => !SHORT_CUT.has(x.id)).map(x => ({...x, ...(SHORT_EDIT[x.id]||{})}));
+  const order = [...new Set(slots.map(x => x.ss || x.id))];
+  slots.sort((a,b) => order.indexOf(a.ss||a.id) - order.indexOf(b.ss||b.id));
+  // relabel blocks A, B, C… and drop the superset tag from anything left alone
+  const groups = [...new Set(slots.map(x => x.ss || x.id))];
+  return {...d, slots: slots.map(x => {
+    const g = x.ss || x.id, L = String.fromCharCode(65 + groups.indexOf(g));
+    const mates = slots.filter(y => (y.ss || y.id) === g);
+    if (mates.length < 2) { const {ss, ...rest} = x; return {...rest, idx:L}; }
+    return {...x, ss:L, idx:L + (mates.indexOf(x) + 1)};
+  })};
+});
 let ACTIVE = 'hyrox';
 let DAYS = DAYS_HYROX;
-const PROGRAMS = { fb: DAYS_FB, ulul: DAYS_ULUL, hyrox: DAYS_HYROX };
+const PROGRAMS = { fb: DAYS_FB, ulul: DAYS_ULUL, hyrox: DAYS_HYROX, short: DAYS_SHORT };
 const SUBTITLES = {
+  short: 'Condensed 4-Day · same week as Hybrid Week, trimmed to 6-7 lifts a day for ~45-55 min sessions. Main lifts, pull-ups, biceps on both upper days, a hinge and single-leg work on both lower days are all kept. Cut: dips, farmers carry, pogo primer, hip thrust, cable fly, rear delt fly, upright row, dead hang, bent-knee calf; squat drops to 3×5. Shares logged history with Hybrid Week.',
   fb: 'ABC · 3 full-body days (squat / hinge / unilateral). Strength leads; running is easy support. Log weights — history shows on every exercise.',
   ulul: 'ULUL · 4 days, Upper/Lower ×2 with running baked in. Heavy once, light-variation once per pattern. ⚡ = superset. Shares logged history with the 3× program.',
   hyrox: 'Hybrid Week · Upper 1 (strength, push) · Threshold + Lower A (deadlift) · Upper 2 (volume, pull) · Lower B (squat) · HYROX Friday · Saturday off · Sunday long. Run first on every double. Deadlift sits on Tuesday because a threshold run mainly tires the quads, so the squat gets the fresher Thursday slot. Blocks run in superset order — ⚡A pairs go back to back. opt = drop it when the clock is tight.'
